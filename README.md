@@ -1,4 +1,4 @@
-# SCRUB
+# READI SCRUB Project
  For SCRUB cleaning code and dashboard
 
 ## SCRUB Cleaning Code
@@ -10,3 +10,6 @@ This code generates the SCRUB dashboard available [here](https://noetel.shinyapp
 I'm still grappling with git, and will move the beta version into a branch soon, but in the meantime, it's in a separate file and the beta-dashboard is available for view [here](https://noetel.shinyapps.io/scrub_beta/)
 
 Please feel free to add features then make a pull request and I'll update the public dashbaord, and sorry for the sporadic commenting.
+
+## Authors
+Alexander Saeri, Peter Slattery, Emily Grundy, & Michael Noetel
