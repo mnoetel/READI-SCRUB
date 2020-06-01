@@ -3,6 +3,7 @@
 library(qualtRics)
 library(sjlabelled)
 library(memisc)
+library(plyr); library(dplyr)
 
 rm(list=ls())
 setwd("~/Google Drive/Research/READI COVID Raw Data and Cleaning Code")
@@ -39,8 +40,24 @@ d6_boxes <- fetch_survey(surveyID = "SV_7aLWgS2MPpryWQB",
                    unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = T,
                    time_zone = Sys.timezone(), label = T)
 
-d6 <- cbind(d6, dplyr::select(d6_boxes, contains("w4_school_neg"), contains("w4_school_pos"),
-                       contains("w4_school_travelmode"), contains("w4_school_type")))
+d6 <- dplyr::select(d6, -contains("w4_school_neg"), -contains("w4_school_pos"),
+                    -contains("w4_school_travelmode"), -contains("w4_school_type"),
+                    -contains("w4_wkex_inperson"), -contains("w4_wkex_remote"), -contains("w4_wkex_trans"))
+d6_boxes <- dplyr::select(d6_boxes, contains("w4_school_neg"), contains("w4_school_pos"),
+                      contains("w4_school_travelmode"), contains("w4_school_type"),
+                      contains("w4_wkex_inperson"), contains("w4_wkex_remote"), contains("w4_wkex_trans"))
+
+make_miss_false <- function(col_to_na){
+  #col_to_na <- d6_boxes[, 1]
+  col_to_na[col_to_na=="99"] <- "-99"
+  col_to_na[col_to_na!="-99"] <- "TRUE"
+  col_to_na[col_to_na=="-99"] <- "FALSE"
+  sjlabelled::as_numeric(col_to_na)
+}
+
+d6_boxes <- lapply(d6_boxes, make_miss_false)
+
+d6 <- cbind(d6, d6_boxes)
 
 brazil <- fetch_survey(surveyID = "SV_23NTI2qGvCT8v0V",
                    unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = F,
@@ -71,7 +88,7 @@ names(d5) <- tolower(names(d5))
 names(d6) <- tolower(names(d6))
 names(brazil) <- tolower(names(brazil))
 
-library(plyr); library(dplyr)
+
 
 #Rename two fields so they match old data sets and are processed the same way
 d5 <- dplyr::rename(d5,likely_app = intentions_download)
@@ -92,7 +109,6 @@ d <- rbind.fill(d, d4)
 d <- rbind.fill(d, d5)
 d <- rbind.fill(d, d6)
 #d <- rbind.fill(d, brazil)
-
 d <- d[colSums(is.na(d))!=dim(d)[1]] #qualtrics has exported some deleted variables so remove the completely empty ones
 
 ##pulling straight out of qualtrics creates a few ordered factorsbut the code below 
@@ -196,7 +212,7 @@ d <- d %>% filter(responseid != "R_b96aPTGwlYJg2hX", # Luca
 #table(d$othb_cancel_travel)
 
 #just reversing the order so new data is easier to inspect
-d <- d[dim(d)[1]:1, ]
+d <- arrange(d, desc(startdate))
 
 # remove unnecessary meta-data
 head(d)
@@ -210,9 +226,9 @@ convert_always_never <- function(var_to_change){
                              levels = c("Never", "Rarely",
                                         "Sometimes", "Often", "Always"))
 }
-beh_questions <- grep("^beh_",names(d))
+beh_questions <- c(grep("^beh_",names(d)),grep("w4_int_beh_",names(d)))
 d[, beh_questions] <- lapply(d[, beh_questions], convert_always_never)
-d$beh_ffdistance
+
 # convert always -- very often variables
 convert_very_often_never <- function(var_to_change){
   var_to_change <- factor(var_to_change, ordered = T,
@@ -414,6 +430,7 @@ d$othb_pa_1 <- keep_numbers_only(d$othb_pa_1)
 d$othb_pa_2 <- keep_numbers_only(d$othb_pa_2)
 d$othb_pa_3[d$othb_pa_3>24] <- NA
 d$othb_alcohol <- keep_numbers_only(d$othb_alcohol)
+d$othb_alcohol_alt <- keep_numbers_only(d$othb_alcohol_alt)
 
 #strip the number for each response
 likely_qns <- grep("likely_", names(d))
@@ -617,7 +634,7 @@ set_label(d[, pastwk_remote]) <- paste("Last week, on how many days did you",
                                          loop_radios,
                                          "remotely?")
 
-risky_vars <- grep("w3_risk$", names(d))
+risky_vars <- grepl("w3_risk$", names(d))|grepl("w4_wkex_risk", names(d))
 risky_labs <- "o	1 - Not at all risky  (1) 
 o	2  (2) 
 o	3  (3) 
@@ -630,13 +647,18 @@ generic_converstion <- function(var_to_change, ordered_levels, ord){
   var_to_change <- factor(var_to_change, ordered = ord,
                           levels = ordered_levels)
 }
+
+risky_questions_w4 <- get_label(d[, names(d)[risky_vars][-1:-6]])
+
 d[, risky_vars] <- lapply(d[, risky_vars],
                           generic_converstion,
                           convert_radio_to_labs(risky_labs), T)
-set_label(d[, risky_vars]) <- paste("Considering the COVID-19 situation, how risky is it for you to",
+
+set_label(d[, names(d)[risky_vars][1:6]]) <- paste("Considering the COVID-19 situation, how risky is it for you to",
                                        loop_radios,
                                        "in person?")
-
+set_label(d[, names(d)[risky_vars][-1:-6]]) <- paste("How risky is...?",
+                                                     risky_questions_w4, sep = " ")
 
 intention_vars <- grep("w3_int$", names(d))
 d[, intention_vars] <- lapply(d[, intention_vars], keep_numbers_only)
@@ -651,7 +673,7 @@ set_label(d[, vic_vars]) <- paste("Changes in COVID-19 rules and regulations too
                                         loop_radios,
                                         "in person since then?")
 
-loop_merge_cols <- grep("^[0-9]_w3",names(d))
+loop_merge_cols <- grepl("^[0-9]_w3",names(d))|grepl("^[0-9]_w4",names(d))
 names(d)[loop_merge_cols] <- gsub("1_","work_",names(d)[loop_merge_cols])
 names(d)[loop_merge_cols] <- gsub("5_","cafe_",names(d)[loop_merge_cols])
 names(d)[loop_merge_cols] <- gsub("6_","medical_",names(d)[loop_merge_cols])
@@ -659,13 +681,28 @@ names(d)[loop_merge_cols] <- gsub("7_","socialise_",names(d)[loop_merge_cols])
 names(d)[loop_merge_cols] <- gsub("8_","shopping_",names(d)[loop_merge_cols])
 names(d)[loop_merge_cols] <- gsub("9_","activities_",names(d)[loop_merge_cols])
 
+#attach the labels then convert to te best format
+pastwk_beh_vars <- grepl("w4_pastwk_inperson", names(d))
+set_label(d[, pastwk_beh_vars]) <- paste("What proportion of time did you ",
+                                         loop_radios[-3],
+                                         " in person compared to doing it remotely?", sep = "")
+pastwk_beh_vars <- grepl("w4_int_inperson", names(d))
+set_label(d[, pastwk_beh_vars]) <- paste("What proportion of that time do you intend to ",
+                                         loop_radios[-3],
+                                         " in person compared to doing it remotely?", sep = "")
+
+
 pt_days <- c(grep("^w3_pastwk_beh_pub", names(d)),
-             grep("^w3_pt_pastwk_beh", names(d)))
+             grep("^w3_pt_pastwk_beh", names(d)),
+             grep("w4_pastwk_ffsocial", names(d)),
+             grep("w4_int_ffsocial", names(d)))
 transports <- c("Public transport","Active transport","Private transport")
 d[, pt_days] <- lapply(d[, pt_days], keep_numbers_only)
+pt_days <- pt_days[1:3]
 set_label(d[, pt_days]) <- paste("Think back to last week, from Monday 4 May to Sunday 10 May. On how many of those days did you use the following methods of transport?",
                                  transports)
-
+set_label(d$socialise_w4_pastwk_ffsocial) <- "On how many of those days did you see family and friends in person in a private space (e.g. your home)?"
+set_label(d$socialise_w4_int_ffsocial) <- "On how many of those days do you intend to see family and friends in person in a private space (e.g. your home)?"
 
 pt_risk <- grep("^w3_pt_risk", names(d))
 d[, pt_risk] <- lapply(d[, pt_risk],
@@ -709,6 +746,15 @@ d[, measure_items] <- lapply(d[, measure_items],
 d$w3_pt_peak <- factor(d$w3_pt_peak)
 set_label(d[, measure_items]) <- paste("Consider the following public transport COVID-19 measures. Rate each of the measures in terms of whether it would make you more likely or less likely to use public transport, if enacted.",
                                     convert_radio_to_labs(pt_measures))
+
+measure_items <- grep("w4_wkex_measures", names(d))
+measure_labels <- get_label(d[, names(d)[measure_items]])
+d[, measure_items] <- lapply(d[, measure_items],
+                             generic_converstion,
+                             unlist(convert_labs_to_list(likely_labs)),
+                             T)
+set_label(d[, names(d)[measure_items]]) <- paste("Rate each of the measures in terms of whether it would make you more likely or less likely to attend work IN PERSON, if enacted.",
+                                                 measure_labels, sep = " ")
 
 peak_measures <- "If I could change school or childcare drop-off hours for my children (1) 
 If I could change my work or education hours to use public transport at quieter times  (4) 
@@ -893,7 +939,7 @@ d$region_aus[which_aus] <- regions$RA_CODE_2016[match(d[which_aus,names(d)=="are
 d$region_aus <- as_numeric(d$region_aus)
 d$region_aus_type[which_aus] <- regions$RA_NAME_2016[match(d[which_aus,names(d)=="area_code"],
                                                 regions$POSTCODE_2017...1)]
-
+d$region_aus_type <- as_factor(d$region_aus_type)
 inhab_labels <- "o	≤ 5,000 people  (1) 
 o	5,001 - 20,000  (2) 
 o	20,001 - 100,000  (3) 
@@ -925,11 +971,11 @@ names(d)[intervention_qns]
 d$condition <- NA
 d$all_commits <- paste(d$`1_pledge`,d$`2_pledge`,d$`3_pledge`,
                        d$`4_pledge`,d$`5_pledge`,d$`6_pledge`)
-d$pledge_wash <- grepl("wash", d$all_commits)
-d$pledge_sneeze <- grepl("sneeze", d$all_commits)
-d$pledge_face <- grepl("unwashed", d$all_commits)
-d$pledge_2m <- grepl("workplace", d$all_commits)
-d$pledge_distancing <- grepl("distancing", d$all_commits)
+d$pledge_wash <- grepl("wash", d$all_commits)&!is.na(d$all_commits)
+d$pledge_sneeze <- grepl("sneeze", d$all_commits)&!is.na(d$all_commits)
+d$pledge_face <- grepl("unwashed", d$all_commits)&!is.na(d$all_commits)
+d$pledge_2m <- grepl("workplace", d$all_commits)&!is.na(d$all_commits)
+d$pledge_distancing <- grepl("distancing", d$all_commits)&!is.na(d$all_commits)
 d$pledge_sum <- rowSums(dplyr::select(d,contains("pledge_")))
 response_cols <- as.data.frame(!is.na(d[, intervention_qns]))
 response_cols$no_intervention <- rowSums(response_cols)==0
@@ -957,11 +1003,11 @@ d[, ordered_factors] <- lapply(d[, ordered_factors], sjlabelled::as_numeric)
 ##Re-apply names to variables
 get_these_attributes <- which(names(d)%in%names(saved_attributes))[-1]
 for(i in get_these_attributes){
+  #i <- get_these_attributes[1]
   if(!is.null(attr(saved_attributes[,names(d)[i]],"label"))){
     attr(d[,i],"label") <- attr(saved_attributes[,names(d)[i]],"label")
   }
 }
-
 
 
 d$agegroup <- NA
@@ -1055,20 +1101,11 @@ split_fogg_checkboxes <- function(df, v){
   newdf[is.na(vec),] <- NA
   newdf
 }
-
-fogg_ffd_vars <- grepl("bar_fogg_ffd", names(d)) & !grepl("bar_fogg_ffd_16_text", names(d))
-d$bar_fogg_ffd[!is.na(d$bar_fogg_ffd_1)] <- paste(d[!is.na(d$bar_fogg_ffd_1),fogg_ffd_vars],sep =",")
-
-for(i in names(d)[grep("bar_fogg_", names(d))]){
-   d <- cbind(d, split_beh_inperson_checkboxes(d, i))
+fogg_vars <- names(d)[grepl("bar_fogg_", names(d))&!grepl("bar_fogg_ffd_16_text", names(d))] 
+for(i in fogg_vars){
+   d <- cbind(d, split_fogg_checkboxes(d, i))
+   d <- dplyr::select(d, -all_of(i))
 }
-d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_cover"))
-d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_distance"))
-d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_hand"))
-d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_stayhome"))
-d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_touch"))
-d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_app"))
-d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_ffd"))
 
 attr(d$othb_treat_alt, "label") <- "Used natural or alternative medicines to prevent or treat COVID-19"
 attr(d$othb_treat_conv, "label") <- "Used prescribed medicines to prevent or treat COVID-19"
@@ -1083,15 +1120,12 @@ d[,pol_variables] <- lapply(d[,pol_variables], sjlabelled::as_factor)
 
 ## remove incorrect attention check people
 table(d$attn_check_3)
-d <- d[!(!is.na(d$attn_check_1)&d$attn_check_1!="Never"),] #sorry about the double-negatives but this formatting leaves it easier to check
-#remove people who their have NA for attention check (question not included) or they responded something other than never
-d <- d[!(!is.na(d$attn_check_3)&d$attn_check_3!="2"),] #same for these
-d <- d[!(!is.na(d$attn_check_3_1)&d$attn_check_3_1!="3"),] #same for these
-
+d <- dplyr::filter(d, is.na(attn_check_1) | attn_check_1=="Never")
+d <- dplyr::filter(d, is.na(attn_check_3) | attn_check_3=="2")
+d <- dplyr::filter(d, is.na(attn_check_3_1) | attn_check_3_1=="3")
 
 attr(d$swb4, 'label') <- " Overall, how anxious did you feel yesterday?"
 
-d$w4_int_inperson_p
 #table(d$agegroup)
 #round(prop.table(table(d$beh_stayhome))*100)
 #round(prop.table(table(d$beh_touch))*100)
@@ -1113,6 +1147,14 @@ file_name_descriptives <- "latest_descriptives_of_each_variable.csv"
 write.csv(describe(d), file_name_descriptives)
 public_dat <- osf_retrieve_node("u5x3r") #%>% osf_ls_files(pattern = "Data")
 public_dat %>% osf_upload(file_name_descriptives, conflicts = "overwrite", verbose = T)
+
+d$w3_pt_use <- as_factor(d$w3_pt_use)
+d$ausonly_state <- as_factor(d$ausonly_state)
+d$w4_wkex_permit <- as_factor(d$w4_wkex_permit)
+d$w4_school_child_ch <- as_factor(d$w4_school_child_ch)
+d$w4_school_child_mode <- as_factor(d$w4_school_child_mode)
+d$w4_school_adult_ch <- as_factor(d$w4_school_adult_ch)
+d$w4_school_adult_mode <- as_factor(d$w4_school_adult_mode)
 
 #Create data dictionary
 d_dict <- as.data.frame(names(d))
