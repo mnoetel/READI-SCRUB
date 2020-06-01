@@ -31,23 +31,45 @@ d5 <- fetch_survey(surveyID = "SV_6gk7JwsvhryTjfL",
                    unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = F,
                    time_zone = Sys.timezone(), label = T)
 
+d6 <- fetch_survey(surveyID = "SV_7aLWgS2MPpryWQB",
+                   unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = F,
+                   time_zone = Sys.timezone(), label = T)
+
+d6_boxes <- fetch_survey(surveyID = "SV_7aLWgS2MPpryWQB",
+                   unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = T,
+                   time_zone = Sys.timezone(), label = T)
+
+d6 <- cbind(d6, dplyr::select(d6_boxes, contains("w4_school_neg"), contains("w4_school_pos"),
+                       contains("w4_school_travelmode"), contains("w4_school_type")))
+
+brazil <- fetch_survey(surveyID = "SV_23NTI2qGvCT8v0V",
+                   unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = F,
+                   time_zone = Sys.timezone(), label = T)
+
+
 
 d1$origin <- paste(c("oru_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
 d2$origin <- paste(c("master_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
 d3$origin <- paste(c("oru_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
 d4$origin <- paste(c("master_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
 d5$origin <- paste(c("oru_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
+d6$origin <- paste(c("oru_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
+brazil$origin <- paste(c("brazil_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
 d1$wave <- 1
 d2$wave <- 1
 d3$wave <- 2
 d4$wave <- 2
 d5$wave <- 3
+d6$wave <- 4
+brazil$wave <- 1
 # hadley's style https://style.tidyverse.org/syntax.html#object-names
 names(d1) <- tolower(names(d1))
 names(d2) <- tolower(names(d2))
 names(d3) <- tolower(names(d3))
 names(d4) <- tolower(names(d4))
 names(d5) <- tolower(names(d5))
+names(d6) <- tolower(names(d6))
+names(brazil) <- tolower(names(brazil))
 
 library(plyr); library(dplyr)
 
@@ -68,6 +90,8 @@ d <- rbind.fill(d1, d2)
 d <- rbind.fill(d, d3)
 d <- rbind.fill(d, d4)
 d <- rbind.fill(d, d5)
+d <- rbind.fill(d, d6)
+#d <- rbind.fill(d, brazil)
 
 d <- d[colSums(is.na(d))!=dim(d)[1]] #qualtrics has exported some deleted variables so remove the completely empty ones
 
@@ -188,7 +212,7 @@ convert_always_never <- function(var_to_change){
 }
 beh_questions <- grep("^beh_",names(d))
 d[, beh_questions] <- lapply(d[, beh_questions], convert_always_never)
-
+d$beh_ffdistance
 # convert always -- very often variables
 convert_very_often_never <- function(var_to_change){
   var_to_change <- factor(var_to_change, ordered = T,
@@ -554,6 +578,11 @@ o	6  (6)
 o	7 - Very good knowledge  (7) "
 d$w3_rules_knowledge <- factor(d$w3_rules_knowledge, ordered = T,
                       levels = convert_radio_to_labs(w3_rules_knowledge_labs))
+knowledge_items <- grepl("w4_rules_", names(d))
+d[, knowledge_items] <- lapply(d[, knowledge_items],
+                          factor, ordered = T,
+                          levels = convert_radio_to_labs(w3_rules_knowledge_labs))
+
 d$w3_rules_self <- convert_always_never(d$w3_rules_self)
 d$screen_job <- factor(d$screen_job)
 
@@ -564,6 +593,9 @@ o	socialise with friends or family  (7)
 o	purchase goods or services  (8) 
 o	participate in public activities  (9) "
 loop_radios <- convert_radio_to_labs(loop_radios)
+
+w4_test_items <- grep("w4_test", names(d))
+d[, w4_test_items] <- lapply(d[, w4_test_items], as_numeric)
 
 #attach the labels then convert to te best format
 pastwk_beh_vars <- grep("w3_pastwk_beh$", names(d))
@@ -688,6 +720,7 @@ d[, peak_items] <- lapply(d[, peak_items],
                              generic_converstion,
                              unlist(convert_labs_to_list(likely_labs)),
                              T)
+
 set_label(d[, peak_items]) <- paste("Consider the following public transport COVID-19 measures. Rate each of the measures in terms of whether it would make you more likely or less likely to use public transport, if enacted.",
                                        convert_radio_to_labs(peak_measures))
 
@@ -951,6 +984,39 @@ d$agegroup[which(d$age >= 60 & d$age <= 69)] <- "60-69"
 d$agegroup[which(d$age >= 70 & d$age <= 79)] <- "70-79"
 d$agegroup[which(d$age >= 80)] <- "80 and over"
 
+# split_beh_inperson_checkboxes <- function(df, v){
+#   # debugging
+#   # df <- d
+#   # v <- "w4_beh_inperson_foodcourt_yn"
+#   vec <- df[, v]
+#   vec <- gsub("\'","",vec)
+#   newdf <- data.frame(rep(NA, length(vec)))
+#   newdf$i_did <- grepl("I did this last week", vec)
+#   newdf$i_will <- grepl("I intend to do this", vec)
+#   newdf <- newdf[, -1]
+#   newdf <- as.data.frame(lapply(newdf, as.character))
+#   names(newdf) <- paste(v, names(newdf), sep = "_")
+#   question_labels <- c("I did this last week (Mon 25 May - Sun 31 May)",
+#                        "I intend to do this over the next 7 days")
+#   newdf <- as.data.frame(lapply(newdf, sjlabelled::as_numeric))
+#   t_f_labels <- c(1:2)
+#   names(t_f_labels) <- c("FALSE", "TRUE")
+#   for(i in 1:dim(newdf)[2]){
+#     attr(newdf[,i], "label") <- paste(#c(attr(vec, "label"),
+#       question_labels[i])#,
+#     #collapse =" ")
+#     attr(newdf[,i], "labels") <- t_f_labels
+#   }
+#   newdf[is.na(vec),] <- NA
+#   newdf
+# }
+# 
+# for(i in names(d)[grep("w4_beh_", names(d))]){
+#   d <- cbind(d, split_beh_inperson_checkboxes(d, i))
+# }
+
+names(d)[grep("w4_beh_", names(d))] <- gsub("_1", "_i_did",names(d)[grep("w4_beh_", names(d))])
+names(d)[grep("w4_beh_", names(d))] <- gsub("_1", "_i_will",names(d)[grep("w4_beh_", names(d))])
 
 split_fogg_checkboxes <- function(df, v){
   # debugging
@@ -989,12 +1055,20 @@ split_fogg_checkboxes <- function(df, v){
   newdf[is.na(vec),] <- NA
   newdf
 }
+
+fogg_ffd_vars <- grepl("bar_fogg_ffd", names(d)) & !grepl("bar_fogg_ffd_16_text", names(d))
+d$bar_fogg_ffd[!is.na(d$bar_fogg_ffd_1)] <- paste(d[!is.na(d$bar_fogg_ffd_1),fogg_ffd_vars],sep =",")
+
+for(i in names(d)[grep("bar_fogg_", names(d))]){
+   d <- cbind(d, split_beh_inperson_checkboxes(d, i))
+}
 d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_cover"))
 d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_distance"))
 d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_hand"))
 d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_stayhome"))
 d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_touch"))
 d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_app"))
+d <- cbind(d, split_fogg_checkboxes(d, "bar_fogg_ffd"))
 
 attr(d$othb_treat_alt, "label") <- "Used natural or alternative medicines to prevent or treat COVID-19"
 attr(d$othb_treat_conv, "label") <- "Used prescribed medicines to prevent or treat COVID-19"
@@ -1016,6 +1090,8 @@ d <- d[!(!is.na(d$attn_check_3_1)&d$attn_check_3_1!="3"),] #same for these
 
 
 attr(d$swb4, 'label') <- " Overall, how anxious did you feel yesterday?"
+
+d$w4_int_inperson_p
 #table(d$agegroup)
 #round(prop.table(table(d$beh_stayhome))*100)
 #round(prop.table(table(d$beh_touch))*100)
