@@ -52,10 +52,10 @@ make_miss_false <- function(col_to_na){
   col_to_na[col_to_na=="99"] <- "-99"
   col_to_na[col_to_na!="-99"] <- "TRUE"
   col_to_na[col_to_na=="-99"] <- "FALSE"
-  sjlabelled::as_numeric(col_to_na)
+  sjlabelled::as_factor(col_to_na)
 }
 
-d6_boxes <- lapply(d6_boxes, make_miss_false)
+d6_boxes <- as.data.frame(sapply(d6_boxes, make_miss_false))
 
 d6 <- cbind(d6, d6_boxes)
 
@@ -94,6 +94,7 @@ names(brazil) <- tolower(names(brazil))
 d5 <- dplyr::rename(d5,likely_app = intentions_download)
 d5$area_code_1_text[is.na(d5$area_code_1_text)] <- d5$ausonly_postcode[is.na(d5$area_code_1_text)]
 d5$state[is.na(d5$state)] <- d5$ausonly_state[is.na(d5$state)]
+d6$state[is.na(d5$state)] <- d6$ausonly_state[is.na(d5$state)]
 d5 <- dplyr::rename(d5, intentions_download = intentions_download_1)
 
 #fix alcohol typo (if not already)
@@ -927,7 +928,7 @@ d$state_aus <- factor(d$state, levels = c("Australian Capital Territory",
                                           "Tasmania",
                                           "Victoria",
                                           "Western Australia"))
-table(d$state_aus)
+table(d$state_aus[d$wave==4])
 
 library(readxl)
 regions <- read_xls("CG_POSTCODE_2017_RA_2016.xls", 4, skip = 5)
