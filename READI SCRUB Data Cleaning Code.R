@@ -1145,7 +1145,7 @@ scrub %>% osf_upload(paste(c(file_path_sensitive,file_name_sensitive),collapse="
 library(psych)
 #file_name <- paste(c(gsub("-","_",as.character(Sys.Date())),"_descriptives_of_each_variable.csv"), collapse = "") #dynamic updating with dates
 file_name_descriptives <- "latest_descriptives_of_each_variable.csv"
-write.csv(describe(d), file_name_descriptives)
+write.csv(psych::describe(d), file_name_descriptives)
 public_dat <- osf_retrieve_node("u5x3r") #%>% osf_ls_files(pattern = "Data")
 public_dat %>% osf_upload(file_name_descriptives, conflicts = "overwrite", verbose = T)
 
@@ -1194,5 +1194,5 @@ open_science_path %>% osf_upload(file_name_open_csv, conflicts = "overwrite", ve
 file_name_open_rds <- "latest_open_science_data.RDS"
 saveRDS(open_science, file_name_open_rds)
 open_science_path %>% osf_upload(file_name_open_rds, conflicts = "overwrite", verbose = T)
-write.csv(describe(open_science),"checking_open_science.csv")
+write.csv(psych::describe(open_science),"checking_open_science.csv")
 

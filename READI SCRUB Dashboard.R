@@ -22,10 +22,19 @@ library(RColorBrewer)
 library(readr)
 library(reshape2)
 
+data_file <- "latest_readi_covid_cleaned_sensitive.RDS"
+if(!file.exists(data_file)){
+  library(osfr)
+  osf_auth()
+  scrub <- osf_retrieve_node("q7gck")
+  scrub_files <- osf_ls_files(scrub)
+  dat <- osf_download(scrub_files[2, ], conflicts = "overwrite")
+  dat <- readr::read_rds(dat$local_path)
+} else {
+  dat <- readr::read_rds(data_file)
+}
 
-dat <- readr::read_rds("latest_readi_covid_cleaned_sensitive.RDS")
-dat$gender <- forcats::fct_recode(dat$gender, "Other" = "Other (specify)")
-
+dat$gender <- sjlabelled::replace_labels(dat$gender, labels = c("Male" = 1, "Female" = 2, "Other" = 3))
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
@@ -36,7 +45,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       selectInput("cross_or_long",
-                  label = "Do you want a snapshot or trends?",
+                  label = "Do you want a snapshot or trends/comparisons?",
                   choices = c("Snapshot","Trends")),
       conditionalPanel(
         condition = "input.cross_or_long == 'Snapshot'",
@@ -71,8 +80,8 @@ ui <- fluidPage(
                       selected = c("Staying home"))),
         checkboxGroupInput("wave",
                            label = "Which wave of data do you want to see?",
-                           choices = c("1","2", "3"),
-                           selected = c("1","2", "3"),
+                           choices = c("1","2", "3", "4"),
+                           selected = c("1","2", "3", "4"),
                            inline = T, width = "100%"),
         dateRangeInput("date",
                        label = "Filter responses by date",
@@ -85,11 +94,19 @@ ui <- fluidPage(
                       label = "Show number of responses"),
         checkboxInput("show_all",
                       label = "Label each segment"),
+        selectizeInput("who_dont",
+                       label = "See results for people who are not...",
+                       choices = c("Staying home",
+                                   "Washing hands",
+                                   "Covering coughs",
+                                   "Keeping 2m",
+                                   "Avoiding their face"),
+                       multiple = TRUE)
       ),
       conditionalPanel(
         condition = "input.cross_or_long == 'Trends'",
         selectInput("var2",
-                    label = "I want to see changes in...",
+                    label = "I want to see ...",
                     choices = c("Core Preventative Behaviours",
                                 "Worries",
                                 "Confidence",
@@ -98,10 +115,19 @@ ui <- fluidPage(
                                 "Predicted Probabilities"),
                     multiple = FALSE,
                     selected = "Core Preventative Behaviours"),
+        selectInput("compare",
+                    label = "Compared across ...",
+                    choices = c("Wave",
+                                "Gender",
+                                "Age",
+                                "Country",
+                                "Australian State"),
+                    multiple = FALSE,
+                    selected = "Wave")
       ),
       selectInput("sh_country",
                   label = "Select a country",
-                  choices = c("Worldwide",sort(unique(as.character(dat$country)))),
+                  choices = c("Worldwide",sort(names(table(dat$country))[table(dat$country)>30])),
                   multiple = FALSE,
                   selected = "Worldwide"),
       conditionalPanel(
@@ -119,14 +145,6 @@ ui <- fluidPage(
                          choices = levels(dat$agegroup),
                          inline = T, width = "100%",
                          selected = levels(dat$agegroup)),
-      selectizeInput("who_dont",
-                     label = "See results for people who are not...",
-                     choices = c("Staying home",
-                                 "Washing hands",
-                                 "Covering coughs",
-                                 "Keeping 2m",
-                                 "Avoiding their face"),
-                     multiple = TRUE),
       helpText(a("Data from the SCRUB project",br(),
                  href = "https://www.scrubcovid19.org/", target="_blank"),
                "Project leads",br(),
@@ -138,6 +156,11 @@ ui <- fluidPage(
                  href = "https://twitter.com/mnoetel", target="_blank"),br(),
                a("Emily Grundy",
                  href = "mailto:emilygrundy0@gmail.com"),br(),
+               "For dashboard comments or requests",
+               a(" email Mike",
+                 href = "mailto:michael.noetel@acu.edu.au"),
+               a(" or log it here",
+                 href = "https://github.com/mnoetel/READI-SCRUB/issues", target ="_blank"),br(),
                "Dashboard with help from",br(),
                a("James Conigrave",
                  href = "https://twitter.com/jamesconigrave", target="_blank"),
@@ -286,30 +309,71 @@ server <- function(input, output, session) {
     filter_me <- dplyr::select(filter_me, as.numeric(which(colSums(is.na(filter_me))!=dim(filter_me)[1])))
     filter_me
   }
-  plot_change <- function(plot_data, plot_title){
+  plot_change <- function(plot_data, plot_title, by = "wave"){
     #plot_data <- plot_dat
+    #plot_title <- "title"
     plot_data$wave <- dplyr::recode(factor(plot_data$wave),
                                     '1' = "March",
                                     '2' = "April",
-                                    '3' = "May")
-    for(var in colnames(plot_data)[-1]) {
+                                    '3' = "May",
+                                    '4' = "June")
+    for(var in colnames(plot_data)[-1:-5]) {
       names(plot_data)[which(var==colnames(plot_data))] <- attr(plot_data[,deparse(as.name(var))], "label")
     }
-    m <- plot_data %>%
-      #Step 2
-      group_by(wave) %>%
-      #Step 3
-      summarise_all(mean, na.rm = TRUE) %>%
-      reshape2::melt(id.vars = "wave", variable.name = "Question",
-                     na.rm = T)
+    if(by == "australian state"){
+      by  <-  "state"
+      plot_data <- filter(plot_data, country == "Australia")
+      }
+
+    groupBy = function(df, field) {
+      #df <- plot_dat
+      #field <- by
+      df %>% group_by_(field) %>%
+        filter(n() >= 30) %>%
+        #Step 3
+        summarise_all(mean, na.rm = TRUE) %>%
+        reshape2::melt(id.vars = field, variable.name = "Question",
+                       na.rm = T)
+    }
+    groupSDs = function(df, field) {
+      remove_other_factors <- which((names(df)!=field)[1:5])
+      df[,-remove_other_factors] %>% group_by_(field) %>%
+        filter(n() >= 30)%>%
+        #Step 3
+        summarise_all(sd, na.rm = TRUE) %>%
+        reshape2::melt(id.vars = field, variable.name = "Question",
+                       na.rm = T)
+    }
+    
+    # by <- "wave"
+    # by <- "gender"
+    if(by=="age"){
+      by <- "agegroup"
+    }
+    # by <- "agegroup"
+    # by <- "state_aus"
+    # by <- "country"
+    m <- groupBy(plot_data, by)
+    m <- cbind(m, groupSDs(plot_data, by)$value)
     m <- mutate(m, q2=Question)
     only_one_wave <- table(m$Question)==1
     multiple_waves <- names(only_one_wave)[!only_one_wave]
     m <- filter(m, m$Question %in% multiple_waves)
+    names(m)[1] <- "group"
+    names(m)[4] <- "sd"
+    m$sd <- m$sd/sqrt(length(m$sd)) #conver to standard errors of the mean
+    m <- dplyr::filter(m, !is.na(group))
+    m$group <- dplyr::recode(m$group,
+                       'Australian Capital Territory' = "ACT",
+                       'United Kingdom of Great Britain and Northern Ireland' = "UK",
+                       'United States of America' = "USA")
+    m$ymin <- m$value-m$sd
+    m$ymax <- m$value+m$sd
     m %>%
-      ggplot( aes(x=wave, y=value)) +
+      ggplot( aes(x=group, y=value, ymin = ymin, ymax = ymax)) +
       geom_line( data=m %>% dplyr::select(-Question), aes(group=q2), color="grey", size=0.5, alpha=0.5) +
       geom_line( aes(group=Question), color="#69b3a2", size=1.2 )+
+      geom_ribbon(aes(group=Question), color=NA, fill="#69b3a2", alpha=0.1)+
       #scale_color_viridis(discrete = TRUE) +
       ggthemes::theme_fivethirtyeight() +
       theme(
@@ -317,13 +381,14 @@ server <- function(input, output, session) {
         panel.grid = element_blank(),
         plot.title = element_text(size = 20, face = "bold", hjust = 1),
         plot.margin = margin(t = 10, r = 10, b = 5, l = 10, unit = "pt"),
-        axis.text = element_text(size=14),
+        axis.text.y = element_text(size=14),
+        axis.text.x = element_text(size=14, angle = 45, hjust = 1),
         strip.text.x = element_text(size=14)
       ) +
       facet_wrap(~Question, dir = "v",
                  ncol = 3,
                  labeller = labeller(Question = label_wrap_gen(30))) +
-      ggtitle(paste(c("Change in ",plot_title," Over Time"), collapse = "")) #plot_title <- "testing"
+      ggtitle(paste(c("Mean Comparisons of ",plot_title," Across ", str_to_title(by)), collapse = "")) #plot_title <- "testing"
   }
 
   pick_fogg <- function(df){
@@ -350,6 +415,9 @@ server <- function(input, output, session) {
   output$distPlot <- renderPlot({
     if(input$sh_country == "Worldwide"){
       plot_dat <- dat
+      #input <- as.data.frame(NA)
+      #input$sh_country <- "Australia"
+      
     } else if (input$sh_country == "Australia") {
       plot_dat <- dplyr::filter(dat, as.character(dat$country) == input$sh_country)
       plot_dat <- dplyr::filter(plot_dat, as.character(plot_dat$state_aus) %in% as.character(input$region))
@@ -362,25 +430,26 @@ server <- function(input, output, session) {
       plot_dat <- dplyr::filter(plot_dat, as.Date.POSIXct(plot_dat$startdate) >= input$date[1])
       plot_dat <- dplyr::filter(plot_dat, as.Date.POSIXct(plot_dat$startdate) <= input$date[2])
       plot_dat <- dplyr::filter(plot_dat, wave %in% as.numeric(input$wave))
+      if(length(input$who_dont) >0){
+        cols_to_keep <- c("Staying home",
+                          "Washing hands",
+                          "Covering coughs",
+                          "Keeping 2m",
+                          "Avoiding their face") %in% input$who_dont
+        #plot_dat <- dat
+        rows_to_keep <- as.data.frame(cbind(plot_dat$beh_stayhome <= 2,
+                                            plot_dat$beh_handwash <= 2,
+                                            plot_dat$beh_cover <= 2,
+                                            plot_dat$beh_distance <= 2,
+                                            plot_dat$beh_touch <= 2)[,cols_to_keep])
+        plot_dat$naughty <- rowSums(rows_to_keep, na.rm = T)
+        plot_dat <- dplyr::filter(plot_dat, plot_dat$naughty > 0)
+      }
     }
     plot_dat <- dplyr::filter(plot_dat, as.character(plot_dat$gender) %in% as.character(input$gender))
     plot_dat <- dplyr::filter(plot_dat, as.character(plot_dat$agegroup) %in% as.character(input$agegroup))
 
-    if(length(input$who_dont) >0){
-      cols_to_keep <- c("Staying home",
-                        "Washing hands",
-                        "Covering coughs",
-                        "Keeping 2m",
-                        "Avoiding their face") %in% input$who_dont
-      #plot_dat <- dat
-      rows_to_keep <- as.data.frame(cbind(plot_dat$beh_stayhome <= 2,
-                                          plot_dat$beh_handwash <= 2,
-                                          plot_dat$beh_cover <= 2,
-                                          plot_dat$beh_distance <= 2,
-                                          plot_dat$beh_touch <= 2)[,cols_to_keep])
-      plot_dat$naughty <- rowSums(rows_to_keep, na.rm = T)
-      plot_dat <- dplyr::filter(plot_dat, plot_dat$naughty > 0)
-    }
+   
 
 
 
@@ -388,8 +457,9 @@ server <- function(input, output, session) {
     if(input$variable == "Behaviours"){
       cats <- 5
       mytitle <- "\"In the past 7 days, which of the following\n personal actions have you taken in response to COVID-19?\""
-      oth <- dplyr::select(plot_dat, startdate, contains("beh_"), contains("othb"),-contains("_pa_"), -contains("alcohol"), -contains("w3"))
-    }
+      oth <- dplyr::select(plot_dat, startdate, starts_with("beh_"), starts_with("othb"),-contains("_pa_"), -contains("alcohol"), -contains("w3"))
+    
+      }
     else if(input$variable=="Worries"){
       cats <- 7
       mytitle <- "\"At the moment, how much do you worry about...?\""
@@ -494,9 +564,11 @@ server <- function(input, output, session) {
       } else {
         if(input$cross_or_long == 'Trends'){
           #plot_dat <- dat
-          plot_dat <- dplyr::select(plot_dat, wave,contains(filter_stem), -contains("other"),
+          #filter_stem <- "beh_"
+          plot_dat <- dplyr::select(plot_dat, wave,agegroup, gender, state, country,
+                                    starts_with(filter_stem), -contains("other"),
                                     -contains("_pa_"), -contains("alcohol"), -contains("w3"))
-          oth_plot <- plot_change(plot_dat, input$var2)
+          oth_plot <- plot_change(plot_dat, input$var2, tolower(input$compare))
         }else{
           if(cats > 0){
             oth_plot <-   gen_plot_with(oth, mytitle, cats, input$show_n, input$show_all)#T,T)#
