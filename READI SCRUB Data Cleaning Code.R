@@ -94,7 +94,7 @@ names(brazil) <- tolower(names(brazil))
 d5 <- dplyr::rename(d5,likely_app = intentions_download)
 d5$area_code_1_text[is.na(d5$area_code_1_text)] <- d5$ausonly_postcode[is.na(d5$area_code_1_text)]
 d5$state[is.na(d5$state)] <- d5$ausonly_state[is.na(d5$state)]
-d6$state[is.na(d5$state)] <- d6$ausonly_state[is.na(d5$state)]
+d6$state[is.na(d6$state)] <- d6$ausonly_state[is.na(d6$state)]
 d5 <- dplyr::rename(d5, intentions_download = intentions_download_1)
 
 #fix alcohol typo (if not already)
@@ -1151,6 +1151,7 @@ public_dat %>% osf_upload(file_name_descriptives, conflicts = "overwrite", verbo
 
 d$w3_pt_use <- as_factor(d$w3_pt_use)
 d$ausonly_state <- as_factor(d$ausonly_state)
+d$state <- as_factor(d$state)
 d$w4_wkex_permit <- as_factor(d$w4_wkex_permit)
 d$w4_school_child_ch <- as_factor(d$w4_school_child_ch)
 d$w4_school_child_mode <- as_factor(d$w4_school_child_mode)
@@ -1195,4 +1196,5 @@ file_name_open_rds <- "latest_open_science_data.RDS"
 saveRDS(open_science, file_name_open_rds)
 open_science_path %>% osf_upload(file_name_open_rds, conflicts = "overwrite", verbose = T)
 write.csv(psych::describe(open_science),"checking_open_science.csv")
+
 
