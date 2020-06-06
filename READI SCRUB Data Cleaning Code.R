@@ -1180,8 +1180,6 @@ file_name_completion <- "latest_country_completion_rates.xlsx"
 library(writexl)
 writexl::write_xlsx(as.data.frame.matrix(country_completion), file_name_completion)
 public_dat %>% osf_upload(file_name_completion, conflicts = "overwrite", verbose = T)
-#upload dashboard code too
-public_dat %>% osf_upload("~/Google Drive/Research/READI/READI COVID19/Coronavirus living survey/05. Data and Analysis/READI COVID Cleaned Data and Survey/jc/test_shiny/live_dashboard.R", conflicts = "overwrite")
 
 #exporting data for various teams
 open_science <- d[, !sapply(d, is.character)] %>% dplyr::select(-area_code)
@@ -1196,5 +1194,3 @@ file_name_open_rds <- "latest_open_science_data.RDS"
 saveRDS(open_science, file_name_open_rds)
 open_science_path %>% osf_upload(file_name_open_rds, conflicts = "overwrite", verbose = T)
 write.csv(psych::describe(open_science),"checking_open_science.csv")
-
-

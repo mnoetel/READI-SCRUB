@@ -16,19 +16,20 @@ library(shiny)
 library(stringr)
 library(shinyWidgets)
 library(sjlabelled)
+library(forcats)
 library(sjmisc)
 library(sjPlot)
 library(RColorBrewer)
 library(readr)
 library(reshape2)
 
-data_file <- "latest_readi_covid_cleaned_sensitive.RDS"
+data_file <- "latest_open_science_data.RDS"
 if(!file.exists(data_file)){
   library(osfr)
   osf_auth()
-  scrub <- osf_retrieve_node("q7gck")
+  scrub <- osf_retrieve_node("zt3f7")
   scrub_files <- osf_ls_files(scrub)
-  dat <- osf_download(scrub_files[2, ], conflicts = "overwrite")
+  dat <- osf_download(scrub_files[3, ], conflicts = "overwrite")
   dat <- readr::read_rds(dat$local_path)
 } else {
   dat <- readr::read_rds(data_file)
@@ -320,8 +321,9 @@ server <- function(input, output, session) {
     for(var in colnames(plot_data)[-1:-5]) {
       names(plot_data)[which(var==colnames(plot_data))] <- attr(plot_data[,deparse(as.name(var))], "label")
     }
+    plot_data$state_aus <- forcats::fct_explicit_na(plot_data$state_aus)
     if(by == "australian state"){
-      by  <-  "state"
+      by  <-  "state_aus"
       plot_data <- filter(plot_data, country == "Australia")
       }
 
@@ -329,7 +331,7 @@ server <- function(input, output, session) {
       #df <- plot_dat
       #field <- by
       df %>% group_by_(field) %>%
-        filter(n() >= 30) %>%
+        filter(n() >= 20) %>%
         #Step 3
         summarise_all(mean, na.rm = TRUE) %>%
         reshape2::melt(id.vars = field, variable.name = "Question",
@@ -446,13 +448,14 @@ server <- function(input, output, session) {
         plot_dat <- dplyr::filter(plot_dat, plot_dat$naughty > 0)
       }
     }
+    #plot_dat <- oth
     plot_dat <- dplyr::filter(plot_dat, as.character(plot_dat$gender) %in% as.character(input$gender))
     plot_dat <- dplyr::filter(plot_dat, as.character(plot_dat$agegroup) %in% as.character(input$agegroup))
 
    
+    
 
-
-
+    
     #title of graph
     if(input$variable == "Behaviours"){
       cats <- 5
@@ -565,7 +568,7 @@ server <- function(input, output, session) {
         if(input$cross_or_long == 'Trends'){
           #plot_dat <- dat
           #filter_stem <- "beh_"
-          plot_dat <- dplyr::select(plot_dat, wave,agegroup, gender, state, country,
+          plot_dat <- dplyr::select(plot_dat, wave, agegroup, gender, state_aus, country,
                                     starts_with(filter_stem), -contains("other"),
                                     -contains("_pa_"), -contains("alcohol"), -contains("w3"))
           oth_plot <- plot_change(plot_dat, input$var2, tolower(input$compare))
