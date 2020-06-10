@@ -370,7 +370,7 @@ d$perceived_knowledge <- factor(d$perceived_knowledge, ordered = T,
 d$perceived_knowledge2 <- factor(d$perceived_knowledge2, ordered = T,
                                     levels = convert_radio_to_labs(knowledge_labs))
 
-symp_labs <- "Related to COVID-19 (1)	Not related to COVID-19 (2)	Don’t know"
+symp_labs <- "Related to COVID-19 (1)	Not related to COVID-19 (2)	Don't know"
 
 symp_labs <- unlist(convert_labs_to_list(symp_labs))
 convert_symp <- function(var_to_change){
@@ -387,7 +387,7 @@ treatment_labs <- "o	There is a drug to treat COVID-19.  (1)
 o	There is a vaccine for COVID-19.  (2) 
 o	There is both a drug for the treatment and a vaccine for COVID-19.  (3) 
 o	There is currently no drug treatment or vaccine for COVID-19.  (4) 
-o	Don’t know  (99)"
+o	Don't know  (99)"
 
 d$treatment <- factor(d$treatment,
                          levels = convert_radio_to_labs(treatment_labs))
@@ -395,7 +395,7 @@ d$treatment <- factor(d$treatment,
 transmission_labs <- "o	COVID-19 can spread from one person to another person.  (1) 
 o	COVID-19 can spread from animals to humans only.  (100) 
 o	COVID-19 cannot spread from one carrier to another.  (101) 
-o	Don’t know  (99)"
+o	Don't know  (99)"
 
 d$transmission <- factor(d$transmission,
                             levels = convert_radio_to_labs(transmission_labs))
@@ -500,7 +500,7 @@ d$info_need_education <- grepl("education", d$info_need)
 d$info_need_travel <- grepl("travel", d$info_need)
 d$info_need_my_risk <- grepl("personal risk", d$info_need)
 d$info_need_testing <- grepl("tested", d$info_need)
-d$info_need_none <- grepl("don’t", d$info_need)
+d$info_need_none <- grepl("don", d$info_need)
 
 info_need_items <- grepl("info_need_", names(d))
 info_need_items <- xor(info_need_items, grepl("info_need_w2", names(d))) 
