@@ -929,6 +929,8 @@ d$state_aus <- factor(d$state, levels = c("Australian Capital Territory",
                                           "Tasmania",
                                           "Victoria",
                                           "Western Australia"))
+d$ausonly_state <- as_factor(d$ausonly_state)
+d$state_aus[is.na(d$state_aus)] <- d$ausonly_state[is.na(d$state_aus)]
 table(d$state_aus[d$wave==4])
 
 library(readxl)
