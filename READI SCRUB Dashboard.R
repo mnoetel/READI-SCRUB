@@ -27,14 +27,15 @@ data_file <- "latest_open_science_data.RDS"
 if(!file.exists(data_file)){
   library(osfr)
   osf_auth()
-  scrub <- osf_retrieve_node("zt3f7")
+  scrub <- osf_retrieve_node("zt3f7") #open science data
+  #scrub <- osf_retrieve_node("q7gck") #sensitive data
   scrub_files <- osf_ls_files(scrub)
   dat <- osf_download(scrub_files[3, ], conflicts = "overwrite")
   dat <- readr::read_rds(dat$local_path)
 } else {
   dat <- readr::read_rds(data_file)
 }
-
+str(dat$beh_handwash)
 dat$gender <- sjlabelled::replace_labels(dat$gender, labels = c("Male" = 1, "Female" = 2, "Other" = 3))
 # Define UI for application that draws a histogram
 ui <- fluidPage(
