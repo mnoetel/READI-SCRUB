@@ -60,9 +60,9 @@ d6_boxes <- as.data.frame(lapply(d6_boxes, make_miss_false))
 d6 <- cbind(d6, d6_boxes)
 
 brazil <- fetch_survey(surveyID = "SV_23NTI2qGvCT8v0V",
-                   unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = F,
-                   time_zone = Sys.timezone(), label = T)
-
+                   unanswer_recode = -99, include_display_order = F,
+                   force_request = T, breakout_sets = F,
+                   time_zone = Sys.timezone(), label = F, convert = FALSE)
 
 
 
@@ -110,7 +110,7 @@ d <- rbind.fill(d, d3)
 d <- rbind.fill(d, d4)
 d <- rbind.fill(d, d5)
 d <- rbind.fill(d, d6)
-#d <- rbind.fill(d, brazil)
+#d <- ?rbind.fill(d, brazil)
 d <- d[colSums(is.na(d))!=dim(d)[1]] #qualtrics has exported some deleted variables so remove the completely empty ones
 
 ##pulling straight out of qualtrics creates a few ordered factorsbut the code below 
@@ -931,7 +931,7 @@ d$state_aus <- factor(d$state, levels = c("Australian Capital Territory",
                                           "Western Australia"))
 d$ausonly_state <- as_factor(d$ausonly_state)
 d$state_aus[is.na(d$state_aus)] <- d$ausonly_state[is.na(d$state_aus)]
-table(d$state_aus[d$wave==4])
+#table(d$state_aus[d$wave==4])
 
 library(readxl)
 regions <- read_xls("CG_POSTCODE_2017_RA_2016.xls", 4, skip = 5)
@@ -1088,8 +1088,7 @@ d$w4_school_adult_mode <- as_factor(d$w4_school_adult_mode)
 ##Re-apply names to variables
 attributes_saved <- names(d)%in%names(saved_attributes) #find variables with saved attributes
 null_attributes <- get_label(d)=="" | is.null(get_label(d))#find null attributes
-get_these_attributes <- which(attributes_saved & null_attributes)[-1]
-names(d)[null_attributes]
+get_these_attributes <- which(attributes_saved & null_attributes)
 for(i in get_these_attributes){
   #i <- get_these_attributes[1]
   set_label(d[,i]) <- get_label(saved_attributes[,names(d)[i]])
@@ -1101,7 +1100,7 @@ set_label(d$othb_treat_alt) <- "Used natural or alternative medicines to prevent
 set_label(d$othb_treat_conv) <- "Used prescribed medicines to prevent or treat COVID-19"
 set_label(d$beh_distance) <- "Keep physical distance from people in public, school, or workplace"
 
-str(d$w4_wkex_trans_int_9)
+
 #table(d$agegroup)
 #round(prop.table(table(d$beh_stayhome))*100)
 #round(prop.table(table(d$beh_touch))*100)
