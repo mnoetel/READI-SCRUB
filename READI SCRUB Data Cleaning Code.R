@@ -40,11 +40,11 @@ d6_boxes <- fetch_survey(surveyID = "SV_7aLWgS2MPpryWQB",
                    unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = T,
                    time_zone = Sys.timezone(), label = T)
 
-d6 <- dplyr::select(d6, -contains("w4_school_neg"), -contains("w4_school_pos"),
-                    -contains("w4_school_travelmode"), -contains("w4_school_type"),
+d6 <- dplyr::select(d6, -contains("w4_school_neg"), -contains("w4_school_pos"), -contains("bar_fogg"),
+                    -contains("w4_school_travelmode"), -contains("w4_school_type"), bar_fogg_ffd_16_TEXT,
                     -contains("w4_wkex_inperson"), -contains("w4_wkex_remote"), -contains("w4_wkex_trans"))
-d6_boxes <- dplyr::select(d6_boxes, contains("w4_school_neg"), contains("w4_school_pos"),
-                      contains("w4_school_travelmode"), contains("w4_school_type"),
+d6_boxes <- dplyr::select(d6_boxes, contains("w4_school_neg"), contains("w4_school_pos"), contains("bar_fogg"),
+                      contains("w4_school_travelmode"), contains("w4_school_type"), -bar_fogg_ffd_16_TEXT,
                       contains("w4_wkex_inperson"), contains("w4_wkex_remote"), contains("w4_wkex_trans"))
 
 make_miss_false <- function(col_to_na){
@@ -55,13 +55,14 @@ make_miss_false <- function(col_to_na){
   sjlabelled::as_factor(col_to_na)
 }
 
-d6_boxes <- as.data.frame(sapply(d6_boxes, make_miss_false))
+d6_boxes <- as.data.frame(lapply(d6_boxes, make_miss_false))
 
 d6 <- cbind(d6, d6_boxes)
 
 brazil <- fetch_survey(surveyID = "SV_23NTI2qGvCT8v0V",
                    unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = F,
                    time_zone = Sys.timezone(), label = T)
+
 
 
 
@@ -1001,16 +1002,6 @@ ordered_factors <- ordered_factors & !(names(d)=="education")
 
 d[, ordered_factors] <- lapply(d[, ordered_factors], sjlabelled::as_numeric)
 
-##Re-apply names to variables
-get_these_attributes <- which(names(d)%in%names(saved_attributes))[-1]
-for(i in get_these_attributes){
-  #i <- get_these_attributes[1]
-  if(!is.null(attr(saved_attributes[,names(d)[i]],"label"))){
-    attr(d[,i],"label") <- attr(saved_attributes[,names(d)[i]],"label")
-  }
-}
-
-
 d$agegroup <- NA
 d$agegroup <- factor(
   d$agegroup,
@@ -1065,52 +1056,8 @@ d$agegroup[which(d$age >= 80)] <- "80 and over"
 names(d)[grep("w4_beh_", names(d))] <- gsub("_1", "_i_did",names(d)[grep("w4_beh_", names(d))])
 names(d)[grep("w4_beh_", names(d))] <- gsub("_1", "_i_will",names(d)[grep("w4_beh_", names(d))])
 
-split_fogg_checkboxes <- function(df, v){
-  # debugging
-  # df <- d
-  # v <- "bar_fogg_cover"
-  vec <- df[, v]
-  vec <- gsub("\'","",vec)
-  newdf <- data.frame(rep(NA, length(vec)))
-  newdf$know_about <- grepl("I didnt know about it", vec)
-  newdf$resources <- grepl("I dont have the resources to do it", vec)
-  newdf$remember <- grepl("I dont remember to do it", vec)
-  newdf$know_how <- grepl("I dont know how to do it", vec)
-  newdf$noone_else <- grepl("No one else is doing it", vec)
-  newdf$none_of_these <- grepl("None of these", vec)
-  newdf$prefer_no <- grepl("Prefer not to answer", vec)
-  newdf <- newdf[, -1]
-  newdf <- as.data.frame(lapply(newdf, as.character))
-  names(newdf) <- paste(v, names(newdf), sep = "_")
-  question_labels <- c("I didnt know about it",
-                       "I dont have the resources to do it",
-                       "I dont remember to do it",
-                       "I dont know how to do it",
-                       "I dont want to do it",
-                       "No one else is doing it",
-                       "None of these",
-                       "Prefer not to answer")
-  newdf <- as.data.frame(lapply(newdf, sjlabelled::as_numeric))
-  t_f_labels <- c(1:2)
-  names(t_f_labels) <- c("FALSE", "TRUE")
-  for(i in 1:dim(newdf)[2]){
-    attr(newdf[,i], "label") <- paste(#c(attr(vec, "label"),
-                                      question_labels[i])#,
-                                      #collapse =" ")
-    attr(newdf[,i], "labels") <- t_f_labels
-  }
-  newdf[is.na(vec),] <- NA
-  newdf
-}
-fogg_vars <- names(d)[grepl("bar_fogg_", names(d))&!grepl("bar_fogg_ffd_16_text", names(d))] 
-for(i in fogg_vars){
-   d <- cbind(d, split_fogg_checkboxes(d, i))
-   d <- dplyr::select(d, -all_of(i))
-}
 
-attr(d$othb_treat_alt, "label") <- "Used natural or alternative medicines to prevent or treat COVID-19"
-attr(d$othb_treat_conv, "label") <- "Used prescribed medicines to prevent or treat COVID-19"
-attr(d$beh_distance, "label") <- "Keep physical distance from people in public, school, or workplace"
+
 
 logical_variables <- grepl("logical",sapply(d, class))
 d[, logical_variables] <- lapply(d[, logical_variables], sjlabelled::as_numeric)
@@ -1120,13 +1067,39 @@ pol_variables <- grepl("pol_",names(d))
 d[,pol_variables] <- lapply(d[,pol_variables], sjlabelled::as_factor)
 
 ## remove incorrect attention check people
-table(d$attn_check_3)
+#table(d$attn_check_3)
 d <- dplyr::filter(d, is.na(attn_check_1) | attn_check_1=="Never")
 d <- dplyr::filter(d, is.na(attn_check_3) | attn_check_3=="2")
 d <- dplyr::filter(d, is.na(attn_check_3_1) | attn_check_3_1=="3")
 
-attr(d$swb4, 'label') <- " Overall, how anxious did you feel yesterday?"
 
+
+d$w3_pt_use <- as_factor(d$w3_pt_use)
+d$ausonly_state <- as_factor(d$ausonly_state)
+d$state <- as_factor(d$state)
+d$w4_wkex_permit <- as_factor(d$w4_wkex_permit)
+d$w4_school_child_ch <- as_factor(d$w4_school_child_ch)
+d$w4_school_child_mode <- as_factor(d$w4_school_child_mode)
+d$w4_school_adult_ch <- as_factor(d$w4_school_adult_ch)
+d$w4_school_adult_mode <- as_factor(d$w4_school_adult_mode)
+
+##Re-apply names to variables
+attributes_saved <- names(d)%in%names(saved_attributes) #find variables with saved attributes
+null_attributes <- get_label(d)=="" | is.null(get_label(d))#find null attributes
+get_these_attributes <- which(attributes_saved & null_attributes)[-1]
+names(d)[null_attributes]
+for(i in get_these_attributes){
+  #i <- get_these_attributes[1]
+  set_label(d[,i]) <- get_label(saved_attributes[,names(d)[i]])
+  #get_label(d[,i])
+}
+#Manually reset a few troublesome labels
+set_label(d$swb4) <- " Overall, how anxious did you feel yesterday?"
+set_label(d$othb_treat_alt) <- "Used natural or alternative medicines to prevent or treat COVID-19"
+set_label(d$othb_treat_conv) <- "Used prescribed medicines to prevent or treat COVID-19"
+set_label(d$beh_distance) <- "Keep physical distance from people in public, school, or workplace"
+
+str(d$w4_wkex_trans_int_9)
 #table(d$agegroup)
 #round(prop.table(table(d$beh_stayhome))*100)
 #round(prop.table(table(d$beh_touch))*100)
@@ -1148,15 +1121,6 @@ file_name_descriptives <- "latest_descriptives_of_each_variable.csv"
 write.csv(psych::describe(d), file_name_descriptives)
 public_dat <- osf_retrieve_node("u5x3r") #%>% osf_ls_files(pattern = "Data")
 public_dat %>% osf_upload(file_name_descriptives, conflicts = "overwrite", verbose = T)
-
-d$w3_pt_use <- as_factor(d$w3_pt_use)
-d$ausonly_state <- as_factor(d$ausonly_state)
-d$state <- as_factor(d$state)
-d$w4_wkex_permit <- as_factor(d$w4_wkex_permit)
-d$w4_school_child_ch <- as_factor(d$w4_school_child_ch)
-d$w4_school_child_mode <- as_factor(d$w4_school_child_mode)
-d$w4_school_adult_ch <- as_factor(d$w4_school_adult_ch)
-d$w4_school_adult_mode <- as_factor(d$w4_school_adult_mode)
 
 #Create data dictionary
 d_dict <- as.data.frame(names(d))
