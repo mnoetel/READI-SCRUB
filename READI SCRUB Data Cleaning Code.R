@@ -8,44 +8,77 @@ library(plyr); library(dplyr)
 rm(list=ls())
 setwd("~/Google Drive/Research/READI COVID Raw Data and Cleaning Code")
 
+
+# Retrieve Qualtrics surveys ----------------------------------------------
+
+
 surveys <- all_surveys()
 
 # Retrieve a single survey
 
+# * W1 ORU ----------------------------------------------------------------
+
 d1 <- fetch_survey(surveyID = "SV_bjSOoBhwULqALY1",
-                  unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = F,
+                  unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = T,
                   time_zone = Sys.timezone(), label = T)
 
+d1_breakouts <- d1 %>% dplyr::select(matches("INFO_NEED_[0-9]*$"), matches("PLEDGE_[0-9]*$")) # INFO_NEED_4 was not measured in ORU W1 (see DD)
+d1 <- d1 %>% dplyr::select(-matches("INFO_NEED_[0-9]*$"), -matches("PLEDGE_[0-9]*$"))
+
+# * W1 MASTER -------------------------------------------------------------
+
 d2 <- fetch_survey(surveyID = "SV_57p0waWGUCBGePj",
-                   unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = F,
+                   unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = T,
                    time_zone = Sys.timezone(), label = T)
+
+d2_breakouts <- d2 %>% dplyr::select(matches("INFO_NEED_[0-9]*$"), matches("PLEDGE_[0-9]*$"))
+d2 <- d2 %>% dplyr::select(-matches("INFO_NEED_[0-9]*$"), -matches("PLEDGE_[0-9]*$"))
+
+# * W2 ORU ----------------------------------------------------------------
 
 d3 <- fetch_survey(surveyID = "SV_3LhcxaSInKqdSZf",
-                   unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = F,
+                   unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = T,
                    time_zone = Sys.timezone(), label = T)
+
+d3_breakouts <- d3 %>% dplyr::select(matches("bar_fogg_\\w+_[0-9]*$"), matches("INFO_NEED_W2_[0-9]*$"), matches("cald_atsi_[0-9]*$"), matches("manipulation_check_[0-9]*$"))
+d3 <- d3 %>% dplyr::select(-matches("bar_fogg_\\w+_[0-9]*$"), -matches("INFO_NEED_W2_[0-9]*$"), -matches("cald_atsi_[0-9]*$"), -matches("manipulation_check_[0-9]*$"))
+
+# * W2 MASTER -------------------------------------------------------------
 
 d4 <- fetch_survey(surveyID = "SV_8d1Q951KB41wsaV",
-                   unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = F,
+                   unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = T,
                    time_zone = Sys.timezone(), label = T)
+
+d4_breakouts <- d4 %>% dplyr::select(matches("bar_fogg_\\w+_[0-9]*$"), matches("INFO_NEED_W2_[0-9]*$"), matches("cald_atsi_[0-9]*$"), matches("manipulation_check_[0-9]*$"))
+d4 <- d4 %>% dplyr::select(-matches("bar_fogg_\\w+_[0-9]*$"), -matches("INFO_NEED_W2_[0-9]*$"), -matches("cald_atsi_[0-9]*$"), -matches("manipulation_check_[0-9]*$"))
+
+# * W3 ORU ------------------------------------------------------------------
 
 d5 <- fetch_survey(surveyID = "SV_6gk7JwsvhryTjfL",
-                   unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = F,
-                   time_zone = Sys.timezone(), label = T)
-
-d6 <- fetch_survey(surveyID = "SV_7aLWgS2MPpryWQB",
-                   unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = F,
-                   time_zone = Sys.timezone(), label = T)
-
-d6_boxes <- fetch_survey(surveyID = "SV_7aLWgS2MPpryWQB",
                    unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = T,
                    time_zone = Sys.timezone(), label = T)
 
-d6 <- dplyr::select(d6, -contains("w4_school_neg"), -contains("w4_school_pos"), -contains("bar_fogg"),
-                    -contains("w4_school_travelmode"), -contains("w4_school_type"), bar_fogg_ffd_16_TEXT,
-                    -contains("w4_wkex_inperson"), -contains("w4_wkex_remote"), -contains("w4_wkex_trans"))
-d6_boxes <- dplyr::select(d6_boxes, contains("w4_school_neg"), contains("w4_school_pos"), contains("bar_fogg"),
-                      contains("w4_school_travelmode"), contains("w4_school_type"), -bar_fogg_ffd_16_TEXT,
-                      contains("w4_wkex_inperson"), contains("w4_wkex_remote"), contains("w4_wkex_trans"))
+d5_breakouts <- d5 %>% dplyr::select(matches("bar_fogg_\\w+_[0-9]*$"), matches("INFO_NEED_W2_[0-9]*$"), matches("cald_atsi_[0-9]*$"), matches("manipulation_check_[0-9]*$"))
+d5 <- d5 %>% dplyr::select(-matches("bar_fogg_\\w+_[0-9]*$"), -matches("INFO_NEED_W2_[0-9]*$"), -matches("cald_atsi_[0-9]*$"), -matches("manipulation_check_[0-9]*$"))
+
+# * W4 ORU ------------------------------------------------------------------
+
+
+d6 <- fetch_survey(surveyID = "SV_7aLWgS2MPpryWQB",
+                   unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = T,
+                   time_zone = Sys.timezone(), label = T)
+
+d6_breakouts <- d6 %>% dplyr::select(matches("w4_school_neg_[0-9]*$"), matches("w4_school_pos_[0-9]*$"), matches("bar_fogg_\\w+_[0-9]*$"),
+                              matches("w4_school_travelmode_[0-9]*$"), matches("w4_school_type_[0-9]*$"),
+                              matches("w4_wkex_inperson_[0-9]*$"), matches("w4_wkex_remote_[0-9]*$"), -matches("w4_wkex_trans_[0-9]*$"))
+d6 <- d6 %>% dplyr::select(-matches("w4_school_neg_[0-9]*$"), -matches("w4_school_pos_[0-9]*$"), -matches("bar_fogg_\\w+_[0-9]*$"),
+                           -matches("w4_school_travelmode_[0-9]*$"), -matches("w4_school_type_[0-9]*$"),
+                           -matches("w4_wkex_inperson_[0-9]*$"), -matches("w4_wkex_remote_[0-9]*$"), -matches("w4_wkex_trans_[0-9]*$"))
+
+
+# Join Qualtrics survey datasets ------------------------------------------
+
+# * Recode checkboxes -----------------------------------------------------
 
 make_miss_false <- function(col_to_na){
   #col_to_na <- d6_boxes[, 1]
@@ -55,9 +88,22 @@ make_miss_false <- function(col_to_na){
   sjlabelled::as_factor(col_to_na)
 }
 
-d6_boxes <- as.data.frame(lapply(d6_boxes, make_miss_false))
+d1_breakouts <- as.data.frame(lapply(d1_breakouts, make_miss_false))
+d2_breakouts <- as.data.frame(lapply(d2_breakouts, make_miss_false))
+d3_breakouts <- as.data.frame(lapply(d3_breakouts, make_miss_false))
+d4_breakouts <- as.data.frame(lapply(d4_breakouts, make_miss_false))
+d5_breakouts <- as.data.frame(lapply(d5_breakouts, make_miss_false))
+d6_breakouts <- as.data.frame(lapply(d6_breakouts, make_miss_false))
 
-d6 <- cbind(d6, d6_boxes)
+
+# * Join checkbox / non-checkbox data by wave -----------------------------
+
+d1 <- cbind(d1, d1_breakouts)
+d2 <- cbind(d2, d2_breakouts)
+d3 <- cbind(d3, d3_breakouts)
+d4 <- cbind(d4, d4_breakouts)
+d5 <- cbind(d5, d5_breakouts)
+d6 <- cbind(d6, d6_breakouts)
 
 brazil <- fetch_survey(surveyID = "SV_23NTI2qGvCT8v0V",
                    unanswer_recode = -99, include_display_order = F,
@@ -65,6 +111,7 @@ brazil <- fetch_survey(surveyID = "SV_23NTI2qGvCT8v0V",
                    time_zone = Sys.timezone(), label = F, convert = FALSE)
 
 
+# * Add origin and wave metadata ------------------------------------------
 
 d1$origin <- paste(c("oru_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
 d2$origin <- paste(c("master_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
@@ -90,6 +137,8 @@ names(d6) <- tolower(names(d6))
 names(brazil) <- tolower(names(brazil))
 
 
+# * Fix per-wave typos before matching --------------------------------------
+
 
 #Rename two fields so they match old data sets and are processed the same way
 d5 <- dplyr::rename(d5,likely_app = intentions_download)
@@ -99,10 +148,13 @@ d6$state[is.na(d6$state)] <- d6$ausonly_state[is.na(d6$state)]
 d5 <- dplyr::rename(d5, intentions_download = intentions_download_1)
 
 #fix alcohol typo (if not already)
-names(d3)[names(d3)=="othb_alocohol"] <- "othb_alcohol"
-names(d4)[names(d4)=="othb_alocohol"] <- "othb_alcohol"
+# names(d3)[names(d3)=="othb_alocohol"] <- "othb_alcohol" # Fixed @@AS 2020-06-21
+# names(d4)[names(d4)=="othb_alocohol"] <- "othb_alcohol"
 d2 <- dplyr::rename(d2, conf_natleaders = conf_leaders,
                     conf_stateleaders = conf_7)
+
+
+# * Join waves ------------------------------------------------------------
 
 
 d <- rbind.fill(d1, d2)
@@ -298,7 +350,7 @@ motiv_questions <- motiv_questions[!(motiv_questions %in% keep_factors_as_text)]
 d[, motiv_questions] <- lapply(d[, motiv_questions], convert_motiv)
 
 # fix SWB 4
-d <- dplyr::rename(d, swb4 = swb4_1)
+# d <- dplyr::rename(d, swb4 = swb4_1) # @@AS fixed 2020-06-21
 d$swb4 <- gsub("Click to write Scale Point ","",d$swb4)
 keep_numbers_only <- function(x) as.numeric(gsub("([0-9]+).*$", "\\1", x))
 # convert subjective wellbeing to numeric
@@ -492,61 +544,61 @@ names(d)[grepl("othb_",names(d))]
 other_questions <- grepl("othb_",names(d)) & !grepl("_pa_",names(d)) & !grepl("_alc",names(d))
 d[, other_questions] <- lapply(d[, other_questions], convert_other)
 
-d$info_need_symptoms <- grepl("Symptoms", d$info_need)
-d$info_need_stories <- grepl("stories", d$info_need)
-d$info_need_science <- grepl("Scientific", d$info_need)
-d$info_need_actions <- grepl("personally", d$info_need)
-d$info_need_risk_group <- grepl("group", d$info_need)
-d$info_need_education <- grepl("education", d$info_need)
-d$info_need_travel <- grepl("travel", d$info_need)
-d$info_need_my_risk <- grepl("personal risk", d$info_need)
-d$info_need_testing <- grepl("tested", d$info_need)
-d$info_need_none <- grepl("don", d$info_need)
-
-info_need_items <- grepl("info_need_", names(d))
-info_need_items <- xor(info_need_items, grepl("info_need_w2", names(d))) 
-d[is.na(d$info_need), info_need_items] <- NA
-  
-d <- dplyr::select(d, -info_need)
-d$info_need_w2_government_tv <- grepl("Government-funded television channels", d$info_need_w2)
-attr(d$info_need_w2_government_tv, "label") <- "Government-funded television channels"
-
-d$info_need_w2_government_radio <- grepl("Government-funded radio stations", d$info_need_w2)
-attr(d$info_need_w2_government_radio, "label") <- "Government-funded radio channels"
-
-d$info_need_w2_commercial_radio <- grepl("Commercial radio stations", d$info_need_w2)
-attr(d$info_need_w2_commercial_radio, "label") <- "Commercial radio stations"
-
-d$info_need_w2_commercial_tv <- grepl("Commercial television stations", d$info_need_w2)
-attr(d$info_need_w2_commercial_tv, "label") <- "Commercial television stations"
-
-d$info_need_w2_commercial_online <- grepl("Commercial online news", d$info_need_w2)
-attr(d$info_need_w2_commercial_online, "label") <- "Commercial online news"
-
-d$info_need_w2_newspapers <- grepl("Daily or weekly newspapers", d$info_need_w2)
-attr(d$info_need_w2_newspapers, "label") <- "Daily or weekly newspapers"
-
-d$info_need_w2_family_friends <- grepl("Family and friends", d$info_need_w2)
-attr(d$info_need_w2_family_friends, "label") <- "Family and friends"
-
-d$info_need_w2_coworkers <- grepl("Co-workers", d$info_need_w2)
-attr(d$info_need_w2_coworkers, "label") <- "Co-workers"
-
-d$info_need_w2_healthcare <- grepl("Consultation with health care workers", d$info_need_w2)
-attr(d$info_need_w2_healthcare, "label") <- "Consultation with health care workers"
-
-d$info_need_w2_authority_websites <- grepl("Government or health authority websites", d$info_need_w2)
-attr(d$info_need_w2_authority_websites, "label") <- "Government or health authority websites"
-
-d$info_need_w2_search_engines <- grepl("Search engines", d$info_need_w2)
-attr(d$info_need_w2_search_engines, "label") <- "Search engines"
-
-d$info_need_w2_social_media <- grepl("Social media", d$info_need_w2)
-attr(d$info_need_w2_social_media, "label") <- "Social media"
-
-info_need_items <- grepl("info_need_w2", names(d))
-d[is.na(d$info_need_w2), info_need_items] <- NA
-d <- dplyr::select(d, -info_need_w2)
+# d$info_need_symptoms <- grepl("Symptoms", d$info_need) @@AS: with breakout boxes these sets should no longer be neccessary.
+# d$info_need_stories <- grepl("stories", d$info_need)
+# d$info_need_science <- grepl("Scientific", d$info_need)
+# d$info_need_actions <- grepl("personally", d$info_need)
+# d$info_need_risk_group <- grepl("group", d$info_need)
+# d$info_need_education <- grepl("education", d$info_need)
+# d$info_need_travel <- grepl("travel", d$info_need)
+# d$info_need_my_risk <- grepl("personal risk", d$info_need)
+# d$info_need_testing <- grepl("tested", d$info_need)
+# d$info_need_none <- grepl("don", d$info_need)
+# 
+# info_need_items <- grepl("info_need_", names(d))
+# info_need_items <- xor(info_need_items, grepl("info_need_w2", names(d))) 
+# d[is.na(d$info_need), info_need_items] <- NA
+#   
+# d <- dplyr::select(d, -info_need)
+# d$info_need_w2_government_tv <- grepl("Government-funded television channels", d$info_need_w2)
+# attr(d$info_need_w2_government_tv, "label") <- "Government-funded television channels"
+# 
+# d$info_need_w2_government_radio <- grepl("Government-funded radio stations", d$info_need_w2)
+# attr(d$info_need_w2_government_radio, "label") <- "Government-funded radio channels"
+# 
+# d$info_need_w2_commercial_radio <- grepl("Commercial radio stations", d$info_need_w2)
+# attr(d$info_need_w2_commercial_radio, "label") <- "Commercial radio stations"
+# 
+# d$info_need_w2_commercial_tv <- grepl("Commercial television stations", d$info_need_w2)
+# attr(d$info_need_w2_commercial_tv, "label") <- "Commercial television stations"
+# 
+# d$info_need_w2_commercial_online <- grepl("Commercial online news", d$info_need_w2)
+# attr(d$info_need_w2_commercial_online, "label") <- "Commercial online news"
+# 
+# d$info_need_w2_newspapers <- grepl("Daily or weekly newspapers", d$info_need_w2)
+# attr(d$info_need_w2_newspapers, "label") <- "Daily or weekly newspapers"
+# 
+# d$info_need_w2_family_friends <- grepl("Family and friends", d$info_need_w2)
+# attr(d$info_need_w2_family_friends, "label") <- "Family and friends"
+# 
+# d$info_need_w2_coworkers <- grepl("Co-workers", d$info_need_w2)
+# attr(d$info_need_w2_coworkers, "label") <- "Co-workers"
+# 
+# d$info_need_w2_healthcare <- grepl("Consultation with health care workers", d$info_need_w2)
+# attr(d$info_need_w2_healthcare, "label") <- "Consultation with health care workers"
+# 
+# d$info_need_w2_authority_websites <- grepl("Government or health authority websites", d$info_need_w2)
+# attr(d$info_need_w2_authority_websites, "label") <- "Government or health authority websites"
+# 
+# d$info_need_w2_search_engines <- grepl("Search engines", d$info_need_w2)
+# attr(d$info_need_w2_search_engines, "label") <- "Search engines"
+# 
+# d$info_need_w2_social_media <- grepl("Social media", d$info_need_w2)
+# attr(d$info_need_w2_social_media, "label") <- "Social media"
+# 
+# info_need_items <- grepl("info_need_w2", names(d))
+# d[is.na(d$info_need_w2), info_need_items] <- NA
+# d <- dplyr::select(d, -info_need_w2)
 
 informed_questions <- grep("informed_",names(d))
 keep_factors_as_text <- grep("_text",names(d))
@@ -818,10 +870,11 @@ d$cald_english <-factor(d$cald_english, ordered = T,
                                    "Well",
                                    "Very well"))
 
-atsi_labels <- "No  (1) 
-Yes, Aboriginal  (2) 
-Yes, Torres Strait Islander  (3)"
-d$cald_atsi <- factor(d$cald_atsi, levels = convert_radio_to_labs(atsi_labels))
+# @@AS 2020-06-21 - no longer needed because the item is split into checkboxes
+# atsi_labels <- "No  (1) 
+# Yes, Aboriginal  (2) 
+# Yes, Torres Strait Islander  (3)"
+# d$cald_atsi <- factor(d$cald_atsi, levels = convert_radio_to_labs(atsi_labels))
 d$pregnant <- sjlabelled::as_factor(d$pregnant)
 
 employ_factors <- grepl("employ", names(d)) & !grepl("_arr", names(d))
@@ -835,12 +888,12 @@ d$hh_income <- factor(d$hh_income, ordered = T,
 need_support_items <- grepl("need_support", names(d))
 d[, need_support_items] <- lapply(d[, need_support_items], keep_numbers_only)
 
-#### Manipulation checks for wave 2 ####
-d$manip_check_info <- grepl("tracking", d$manipulation_check)
-d$manip_check_safe <- grepl("protected", d$manipulation_check)
-d$manip_check_no_safe <- grepl("long-term", d$manipulation_check)
-d$manip_check_aut <- grepl("activate", d$manipulation_check)
-d$manip_check_cont <- grepl("must", d$manipulation_check)
+#### Manipulation checks for wave 2 #### @@ AS no longer needed due to split out as separate items
+# d$manip_check_info <- grepl("tracking", d$manipulation_check) # @@AS: manipulation_check_1
+# d$manip_check_safe <- grepl("protected", d$manipulation_check) # @@AS: manipulation_check_4
+# d$manip_check_no_safe <- grepl("long-term", d$manipulation_check) # @@AS: manipulation_check_5
+# d$manip_check_aut <- grepl("activate", d$manipulation_check) # @@AS: manipulation_check_2
+# d$manip_check_cont <- grepl("must", d$manipulation_check) # @@AS: manipulation_check_3
 
 #check if allocation matches attention check
 #if in either autonomy support conditions and clicked choice manip check but not control
@@ -857,15 +910,22 @@ d$aut_int <- d$aut_nosafe | d$aut_safe
 d$safe_int <- d$cont_safe | d$aut_safe
 
 #check maniplations for each main effect
-d$autonomy_manip_check_passed <- (d$aut_int & d$manip_check_aut & !d$manip_check_cont) |
-  (!d$aut_int & !d$manip_check_aut & d$manip_check_cont)
+# d$autonomy_manip_check_passed <- (d$aut_int & d$manip_check_aut & !d$manip_check_cont) | # @@ AS these vars don't exist in my edits
+#   (!d$aut_int & !d$manip_check_aut & d$manip_check_cont)
 
-d$safety_manip_check_passed <- (d$safe_int & d$manip_check_safe & !d$manip_check_no_safe) |
-  (!d$safe_int & !d$manip_check_safe & d$manip_check_no_safe) 
+d$autonomy_manip_check_passed <- (d$aut_int & d$manipulation_check_2 & !d$manipulation_check_3) | # @@ AS alternative manip check
+  (!d$aut_int & !d$manipulation_check_2 & d$manipulation_check_3)
+
+# d$safety_manip_check_passed <- (d$safe_int & d$manip_check_safe & !d$manip_check_no_safe) |# @@ AS these vars don't exist in my edits
+#   (!d$safe_int & !d$manip_check_safe & d$manip_check_no_safe) 
+
+d$safety_manip_check_passed <- (d$safe_int & d$manipulation_check_4 & !d$manipulation_check_5) |
+  (!d$safe_int & !d$manipulation_check_4 & d$manipulation_check_5) 
+
 
 d$intentions_total <- d$intentions_download + d$intentions_share + d$intentions_share
 
-manip_check_items <- grepl("manip_check", names(d))
+manip_check_items <- grepl("manipulation_check_", names(d))
 d[d$wave != 2, manip_check_items] <- NA
 
 aut_control_items <- grep("aut|cont|safe_", names(d))
@@ -944,7 +1004,9 @@ d$region_aus <- as_numeric(d$region_aus)
 d$region_aus_type[which_aus] <- regions$RA_NAME_2016[match(d[which_aus,names(d)=="area_code"],
                                                 regions$POSTCODE_2017...1)]
 d$region_aus_type <- as_factor(d$region_aus_type)
-inhab_labels <- "o	≤ 5,000 people  (1) 
+# @@AS I somehow broke this inhab_labels, possibly due to an PC/MAC encoding issue for "less
+# than or equal to" (it shows as garbled characters on my screen)
+inhab_labels <- "o	??? 5,000 people  (1) 
 o	5,001 - 20,000  (2) 
 o	20,001 - 100,000  (3) 
 o	100,001 - 500,000  (4) 
@@ -969,29 +1031,36 @@ d$will_you_stand_against_corona <- factor(will_you_stand_against_corona,
                                                         "-99"))
 d <- d[, -sac_cols]
 
-intervention_qns <- grep("_pledge$", names(d))
-
-names(d)[intervention_qns]
-d$condition <- NA
-d$all_commits <- paste(d$`1_pledge`,d$`2_pledge`,d$`3_pledge`,
-                       d$`4_pledge`,d$`5_pledge`,d$`6_pledge`)
-d$pledge_wash <- grepl("wash", d$all_commits)&!is.na(d$all_commits)
-d$pledge_sneeze <- grepl("sneeze", d$all_commits)&!is.na(d$all_commits)
-d$pledge_face <- grepl("unwashed", d$all_commits)&!is.na(d$all_commits)
-d$pledge_2m <- grepl("workplace", d$all_commits)&!is.na(d$all_commits)
-d$pledge_distancing <- grepl("distancing", d$all_commits)&!is.na(d$all_commits)
-d$pledge_sum <- rowSums(dplyr::select(d,contains("pledge_")))
-response_cols <- as.data.frame(!is.na(d[, intervention_qns]))
-response_cols$no_intervention <- rowSums(response_cols)==0
-d$condition <- apply(response_cols, 1, which)
-d$condition <- factor(d$condition)
-levels(d$condition) = list("Basic pledge" = 1,
-                           "Self-preservation" = 2,
-                           "Positive affect" = 3,
-                           "Social proof" = 4,
-                           "Negative affect" = 5,
-                           "Control group" = 6)
-table(d$condition)
+# @@ AS 2020-06-21 Here are the current codes for each variable. Pledges are a bit broken so I have commented this out.
+# ???	Wash my hands for 20 seconds with soap and water, or alcohol-based hand sanitiser  (1) 
+# ???	Cover my coughs and sneezes with my elbow or a tissue  (4) 
+# ???	NOT touch my face with unwashed hands  (5) 
+# ???	Keep more than 2 metres (6 ft) away from people in public, school, or workplace  (6) 
+# ???	Practice physical distancing (e.g., by staying at home)  (7) 
+# 
+# intervention_qns <- grep("_pledge$", names(d))
+# 
+# names(d)[intervention_qns]
+# d$condition <- NA
+# d$all_commits <- paste(d$`1_pledge`,d$`2_pledge`,d$`3_pledge`,
+#                        d$`4_pledge`,d$`5_pledge`,d$`6_pledge`)
+# d$pledge_wash <- grepl("wash", d$all_commits)&!is.na(d$all_commits)
+# d$pledge_sneeze <- grepl("sneeze", d$all_commits)&!is.na(d$all_commits)
+# d$pledge_face <- grepl("unwashed", d$all_commits)&!is.na(d$all_commits)
+# d$pledge_2m <- grepl("workplace", d$all_commits)&!is.na(d$all_commits)
+# d$pledge_distancing <- grepl("distancing", d$all_commits)&!is.na(d$all_commits)
+# d$pledge_sum <- rowSums(dplyr::select(d,contains("pledge_")))
+# response_cols <- as.data.frame(!is.na(d[, intervention_qns]))
+# response_cols$no_intervention <- rowSums(response_cols)==0
+# d$condition <- apply(response_cols, 1, which)
+# d$condition <- factor(d$condition)
+# levels(d$condition) = list("Basic pledge" = 1,
+#                            "Self-preservation" = 2,
+#                            "Positive affect" = 3,
+#                            "Social proof" = 4,
+#                            "Negative affect" = 5,
+#                            "Control group" = 6)
+# table(d$condition)
 d <- dplyr::select(d, -contains("_pledge")) %>%
   dplyr::select(-contains("all_commits")) %>%
   dplyr::select(-source, -sc0, -demo_skip)
