@@ -39,7 +39,7 @@ if(!file.exists(data_file)){
 dat$gender <- sjlabelled::replace_labels(dat$gender, labels = c("Male" = 1, "Female" = 2, "Other" = 3))
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-
+  tags$head(includeHTML(("google-analytics.html"))),
   # Application title
   titlePanel("How are people responding to COVID-19?"),
   setBackgroundColor("#F0F0F0"),
@@ -169,9 +169,9 @@ ui <- fluidPage(
       ),
       width = 3
     )
-
+    
     ,
-
+    
     # Show a plot of the generated distribution
     mainPanel(
       conditionalPanel(condition = "input.variable == 'Choose variable' & input.cross_or_long == 'Snapshot'",
@@ -184,7 +184,7 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-
+  
   gen_plot_with <- function(data, title, cats, show_n, show_all){
     date_range <- paste(format(range(as.Date.POSIXct(data$startdate)),
                                format = "%B %d"), collapse = " — ")
@@ -227,7 +227,7 @@ server <- function(input, output, session) {
                                       collapse = "\n"),
                         x = dim(data)[2]-.5, y = -.95),
                     vjust = "middle", hjust = "inward", colour = "darkgrey")
-
+    
     data_plot
   }
   con_data_plot <- function(data, title){
@@ -299,10 +299,10 @@ server <- function(input, output, session) {
                 vjust = "middle", hjust = "right", colour = "white", size = 6) +
       geom_text(aes(label = "84% of people\nsay Never\nRarely or\nSometimes", 1.85, y = .82, fontface = "bold", size = 20),
                 vjust = "middle", hjust = "left", colour = "white", size = 6)
-
+    
     data_plot
   }
-
+  
   filter_empties <- function(filter_me){
     #filter_me <- df
     #filter out completely empty rows (except start date)
@@ -311,6 +311,7 @@ server <- function(input, output, session) {
     filter_me <- dplyr::select(filter_me, as.numeric(which(colSums(is.na(filter_me))!=dim(filter_me)[1])))
     filter_me
   }
+  
   plot_change <- function(plot_data, plot_title, by = "wave"){
     #plot_data <- plot_dat
     #plot_title <- "title"
@@ -322,13 +323,12 @@ server <- function(input, output, session) {
     for(var in colnames(plot_data)[-1:-5]) {
       names(plot_data)[which(var==colnames(plot_data))] <- attr(plot_data[,deparse(as.name(var))], "label")
     }
-    plot_data$state_aus <- forcats::fct_explicit_na(plot_data$state_aus)
     if(by == "australian state"){
       by  <-  "state_aus"
       plot_data <- filter(plot_data, country == "Australia")
-      }
-
-    groupBy = function(df, field) {
+    }
+    
+    groupBy <- function(df, field) {
       #df <- plot_dat
       #field <- by
       df %>% group_by_(field) %>%
@@ -338,10 +338,10 @@ server <- function(input, output, session) {
         reshape2::melt(id.vars = field, variable.name = "Question",
                        na.rm = T)
     }
-    groupSDs = function(df, field) {
+    groupSDs <- function(df, field) {
       remove_other_factors <- which((names(df)!=field)[1:5])
       df[,-remove_other_factors] %>% group_by_(field) %>%
-        filter(n() >= 30)%>%
+        filter(n() >= 20)%>%
         #Step 3
         summarise_all(sd, na.rm = TRUE) %>%
         reshape2::melt(id.vars = field, variable.name = "Question",
@@ -367,9 +367,9 @@ server <- function(input, output, session) {
     m$sd <- m$sd/sqrt(length(m$sd)) #conver to standard errors of the mean
     m <- dplyr::filter(m, !is.na(group))
     m$group <- dplyr::recode(m$group,
-                       'Australian Capital Territory' = "ACT",
-                       'United Kingdom of Great Britain and Northern Ireland' = "UK",
-                       'United States of America' = "USA")
+                             'Australian Capital Territory' = "ACT",
+                             'United Kingdom of Great Britain and Northern Ireland' = "UK",
+                             'United States of America' = "USA")
     m$ymin <- m$value-m$sd
     m$ymax <- m$value+m$sd
     m %>%
@@ -393,7 +393,7 @@ server <- function(input, output, session) {
                  labeller = labeller(Question = label_wrap_gen(30))) +
       ggtitle(paste(c("Mean Comparisons of ",plot_title," Across ", str_to_title(by)), collapse = "")) #plot_title <- "testing"
   }
-
+  
   pick_fogg <- function(df){
     ipt <- input$bar_fogg
     #ipt <- "Staying Home" #troubleshooting code
@@ -414,7 +414,7 @@ server <- function(input, output, session) {
     df <- dplyr::select(df, contains(choose_var), startdate)
     df
   }
-
+  
   output$distPlot <- renderPlot({
     if(input$sh_country == "Worldwide"){
       plot_dat <- dat
@@ -452,18 +452,18 @@ server <- function(input, output, session) {
     #plot_dat <- oth
     plot_dat <- dplyr::filter(plot_dat, as.character(plot_dat$gender) %in% as.character(input$gender))
     plot_dat <- dplyr::filter(plot_dat, as.character(plot_dat$agegroup) %in% as.character(input$agegroup))
-
-   
     
-
+    
+    
+    
     
     #title of graph
     if(input$variable == "Behaviours"){
       cats <- 5
       mytitle <- "\"In the past 7 days, which of the following\n personal actions have you taken in response to COVID-19?\""
       oth <- dplyr::select(plot_dat, startdate, starts_with("beh_"), starts_with("othb"),-contains("_pa_"), -contains("alcohol"), -contains("w3"))
-    
-      }
+      
+    }
     else if(input$variable=="Worries"){
       cats <- 7
       mytitle <- "\"At the moment, how much do you worry about...?\""
@@ -537,8 +537,8 @@ server <- function(input, output, session) {
         filter_stem <- "prob_"
       }
     }
-
-
+    
+    
     # else if(input$variable=="What do people think are symptoms?"){
     #   cats <- 2
     #   mytitle <- "Which of the following can be symptoms of COVID-19?"
@@ -546,10 +546,10 @@ server <- function(input, output, session) {
     #   oth <- as.data.frame(lapply(oth, sjlabelled::as_numeric))
     #   oth <- dplyr::filter(oth, !is.na(oth$symp_fever))
     # }
-
-
+    
+    
     #initialise function for generating graph with data, title, and number of categories in likert scale
-
+    
     oth <- filter_empties(oth)
     if(input$variable != "Choose variable" | input$cross_or_long == 'Trends'){
       if(dim(oth)[2]<1|dim(plot_dat)[1]<30){
@@ -595,8 +595,8 @@ server <- function(input, output, session) {
           #panel.grid.minor.y = element_line(colour = 'grey', linetype = 2),
         )
     }
-
-
+    
+    
     oth_plot
   }, height = 800)
 }
