@@ -35,7 +35,7 @@ if(!file.exists(data_file)){
 } else {
   dat <- readr::read_rds(data_file)
 }
-str(dat$beh_handwash)
+
 dat$gender <- sjlabelled::replace_labels(dat$gender, labels = c("Male" = 1, "Female" = 2, "Other" = 3))
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -80,11 +80,6 @@ ui <- fluidPage(
                                   "Using COVIDsafe"),
                       multiple = FALSE,
                       selected = c("Staying home"))),
-        checkboxGroupInput("wave",
-                           label = "Which wave of data do you want to see?",
-                           choices = c("1","2", "3", "4"),
-                           selected = c("1","2", "3", "4"),
-                           inline = T, width = "100%"),
         dateRangeInput("date",
                        label = "Filter responses by date",
                        start = min(dat$startdate),
@@ -127,6 +122,11 @@ ui <- fluidPage(
                     multiple = FALSE,
                     selected = "Wave")
       ),
+      checkboxGroupInput("wave",
+                         label = "Which wave of data do you want to see?",
+                         choices = c("1","2", "3", "4"),
+                         selected = c("1","2", "3", "4"),
+                         inline = T, width = "100%"),
       selectInput("sh_country",
                   label = "Select a country",
                   choices = c("Worldwide",sort(names(table(dat$country))[table(dat$country)>30])),
@@ -429,10 +429,10 @@ server <- function(input, output, session) {
     }
     attr(plot_dat$swb4,"label") <- " Overall, how anxious did you feel yesterday?"
     oth <- plot_dat
+    plot_dat <- dplyr::filter(plot_dat, wave %in% as.numeric(input$wave))
     if(input$cross_or_long == 'Snapshot'){
       plot_dat <- dplyr::filter(plot_dat, as.Date.POSIXct(plot_dat$startdate) >= input$date[1])
       plot_dat <- dplyr::filter(plot_dat, as.Date.POSIXct(plot_dat$startdate) <= input$date[2])
-      plot_dat <- dplyr::filter(plot_dat, wave %in% as.numeric(input$wave))
       if(length(input$who_dont) >0){
         cols_to_keep <- c("Staying home",
                           "Washing hands",
