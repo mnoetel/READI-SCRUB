@@ -19,17 +19,21 @@ surveys <- all_surveys()
 # * W1 ORU ----------------------------------------------------------------
 
 d1 <- fetch_survey(surveyID = "SV_bjSOoBhwULqALY1",
-                  unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = T,
-                  time_zone = Sys.timezone(), label = T)
+                  unanswer_recode = -99,include_display_order = F,
+                  force_request = T, breakout_sets = T,
+                  time_zone = Sys.timezone(), label = T, fileEncoding = "UTF-8")
 
-d1_breakouts <- d1 %>% dplyr::select(matches("INFO_NEED_[0-9]*$"), matches("PLEDGE_[0-9]*$")) # INFO_NEED_4 was not measured in ORU W1 (see DD)
-d1 <- d1 %>% dplyr::select(-matches("INFO_NEED_[0-9]*$"), -matches("PLEDGE_[0-9]*$"))
+d1_breakouts <- d1 %>% dplyr::select(matches("INFO_NEED_[0-9]*$"),
+                                     matches("PLEDGE_[0-9]*$")) # INFO_NEED_4 was not measured in ORU W1 (see DD)
+d1 <- d1 %>% dplyr::select(-matches("INFO_NEED_[0-9]*$"),
+                           -matches("PLEDGE_[0-9]*$"))
 
 # * W1 MASTER -------------------------------------------------------------
 
 d2 <- fetch_survey(surveyID = "SV_57p0waWGUCBGePj",
-                   unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = T,
-                   time_zone = Sys.timezone(), label = T)
+                   unanswer_recode = -99,include_display_order = F,
+                   force_request = T, breakout_sets = T,
+                   time_zone = Sys.timezone(), label = T, fileEncoding = "UTF-8")
 
 d2_breakouts <- d2 %>% dplyr::select(matches("INFO_NEED_[0-9]*$"), matches("PLEDGE_[0-9]*$"))
 d2 <- d2 %>% dplyr::select(-matches("INFO_NEED_[0-9]*$"), -matches("PLEDGE_[0-9]*$"))
@@ -37,8 +41,9 @@ d2 <- d2 %>% dplyr::select(-matches("INFO_NEED_[0-9]*$"), -matches("PLEDGE_[0-9]
 # * W2 ORU ----------------------------------------------------------------
 
 d3 <- fetch_survey(surveyID = "SV_3LhcxaSInKqdSZf",
-                   unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = T,
-                   time_zone = Sys.timezone(), label = T)
+                   unanswer_recode = -99,include_display_order = F,
+                   force_request = T, breakout_sets = T,
+                   time_zone = Sys.timezone(), label = T, fileEncoding = "UTF-8")
 
 d3_breakouts <- d3 %>% dplyr::select(matches("bar_fogg_\\w+_[0-9]*$"), matches("INFO_NEED_W2_[0-9]*$"), matches("cald_atsi_[0-9]*$"), matches("manipulation_check_[0-9]*$"))
 d3 <- d3 %>% dplyr::select(-matches("bar_fogg_\\w+_[0-9]*$"), -matches("INFO_NEED_W2_[0-9]*$"), -matches("cald_atsi_[0-9]*$"), -matches("manipulation_check_[0-9]*$"))
@@ -46,7 +51,8 @@ d3 <- d3 %>% dplyr::select(-matches("bar_fogg_\\w+_[0-9]*$"), -matches("INFO_NEE
 # * W2 MASTER -------------------------------------------------------------
 
 d4 <- fetch_survey(surveyID = "SV_8d1Q951KB41wsaV",
-                   unanswer_recode = -99,include_display_order = F, force_request = T, breakout_sets = T,
+                   unanswer_recode = -99,include_display_order = F,
+                   force_request = T, breakout_sets = T,
                    time_zone = Sys.timezone(), label = T)
 
 d4_breakouts <- d4 %>% dplyr::select(matches("bar_fogg_\\w+_[0-9]*$"), matches("INFO_NEED_W2_[0-9]*$"), matches("cald_atsi_[0-9]*$"), matches("manipulation_check_[0-9]*$"))
@@ -55,25 +61,79 @@ d4 <- d4 %>% dplyr::select(-matches("bar_fogg_\\w+_[0-9]*$"), -matches("INFO_NEE
 # * W3 ORU ------------------------------------------------------------------
 
 d5 <- fetch_survey(surveyID = "SV_6gk7JwsvhryTjfL",
-                   unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = T,
-                   time_zone = Sys.timezone(), label = T)
+                   unanswer_recode = -99, include_display_order = F,
+                   force_request = T, breakout_sets = T,
+                   time_zone = Sys.timezone(), label = T, fileEncoding = "UTF-8")
 
-d5_breakouts <- d5 %>% dplyr::select(matches("bar_fogg_\\w+_[0-9]*$"), matches("INFO_NEED_W2_[0-9]*$"), matches("cald_atsi_[0-9]*$"), matches("manipulation_check_[0-9]*$"))
-d5 <- d5 %>% dplyr::select(-matches("bar_fogg_\\w+_[0-9]*$"), -matches("INFO_NEED_W2_[0-9]*$"), -matches("cald_atsi_[0-9]*$"), -matches("manipulation_check_[0-9]*$"))
+d5_breakouts <- d5 %>% dplyr::select(matches("bar_fogg_\\w+_[0-9]*$"), 
+                                     matches("INFO_NEED_W2_[0-9]*$"),
+                                     matches("cald_atsi_[0-9]*$"),
+                                     matches("manipulation_check_[0-9]*$"))
+d5 <- d5 %>% dplyr::select(-matches("bar_fogg_\\w+_[0-9]*$"),
+                           -matches("INFO_NEED_W2_[0-9]*$"),
+                           -matches("cald_atsi_[0-9]*$"),
+                           -matches("manipulation_check_[0-9]*$"))
 
 # * W4 ORU ------------------------------------------------------------------
 
 
 d6 <- fetch_survey(surveyID = "SV_7aLWgS2MPpryWQB",
-                   unanswer_recode = -99, include_display_order = F, force_request = T, breakout_sets = T,
-                   time_zone = Sys.timezone(), label = T)
+                   unanswer_recode = -99, include_display_order = F,
+                   force_request = T, breakout_sets = T,
+                   time_zone = Sys.timezone(), label = T, fileEncoding = "UTF-8")
 
-d6_breakouts <- d6 %>% dplyr::select(matches("w4_school_neg_[0-9]*$"), matches("w4_school_pos_[0-9]*$"), matches("bar_fogg_\\w+_[0-9]*$"),
-                              matches("w4_school_travelmode_[0-9]*$"), matches("w4_school_type_[0-9]*$"),
-                              matches("w4_wkex_inperson_[0-9]*$"), matches("w4_wkex_remote_[0-9]*$"), -matches("w4_wkex_trans_[0-9]*$"))
-d6 <- d6 %>% dplyr::select(-matches("w4_school_neg_[0-9]*$"), -matches("w4_school_pos_[0-9]*$"), -matches("bar_fogg_\\w+_[0-9]*$"),
-                           -matches("w4_school_travelmode_[0-9]*$"), -matches("w4_school_type_[0-9]*$"),
-                           -matches("w4_wkex_inperson_[0-9]*$"), -matches("w4_wkex_remote_[0-9]*$"), -matches("w4_wkex_trans_[0-9]*$"))
+d6_breakouts <- d6 %>% dplyr::select(matches("w4_school_neg_[0-9]*$"),
+                                     matches("w4_school_pos_[0-9]*$"),
+                                     matches("bar_fogg_\\w+_[0-9]*$"),
+                                     matches("w4_school_travelmode_[0-9]*$"),
+                                     matches("w4_school_type_[0-9]*$"),
+                                     matches("w4_wkex_inperson_[0-9]*$"),
+                                     matches("w4_wkex_remote_[0-9]*$"),
+                                     matches("w4_wkex_trans_[0-9]*$"),
+                                     matches("w4_wkex_trans_int_[0-9]*$"),
+                                     matches("w4_wkex_trans_precov_[0-9]*$"),
+                                     matches("w4_beh_inperson.*_[0-9]*$"),
+                                     matches("w4_beh_medical.*_[0-9]*$"))
+
+d6 <- d6 %>% dplyr::select(-matches("w4_school_neg_[0-9]*$"),
+                           -matches("w4_school_pos_[0-9]*$"),
+                           -matches("bar_fogg_\\w+_[0-9]*$"),
+                           -matches("w4_school_travelmode_[0-9]*$"),
+                           -matches("w4_school_type_[0-9]*$"),
+                           -matches("w4_wkex_inperson_[0-9]*$"),
+                           -matches("w4_wkex_remote_[0-9]*$"),
+                           -matches("w4_wkex_trans_[0-9]*$"),
+                           -matches("w4_wkex_trans_int_[0-9]*$"),
+                           -matches("w4_wkex_trans_precov_[0-9]*$"),
+                           -matches("w4_beh_inperson.*_[0-9]*$"),
+                           -matches("w4_beh_medical.*_[0-9]*$"))
+
+# * W5 ORU ------------------------------------------------------------------
+
+
+d7 <- fetch_survey(surveyID = "SV_ezDxu1Uhp2iMd6t",
+                   unanswer_recode = -99, include_display_order = F,
+                   force_request = T, breakout_sets = T,
+                   time_zone = Sys.timezone(), label = T, fileEncoding = "UTF-8")
+
+#code to check that the checkboxes below actuall pull the right checkboxes
+test_grepl <- function(match_this){names(d7)[grepl(match_this, names(d7))]}
+#test_grepl("w5_symptoms_.*_[0-9]*$")
+
+d7_breakouts <- d7 %>% dplyr::select(matches("bar_fogg_\\w+_[0-9]*$"),
+                                     matches("drv_ffd_[0-9]*$"),
+                                     matches("w5_pastwk.*yn_[0-9]*$"),
+                                     matches("w5_hyp_.*_[0-9]*$"),
+                                     matches("w5_test_.*_[0-9]*$"),
+                                     matches("w5_symptoms_.*_[0-9]*$"),
+                                     matches("w5_rules_distance.*[0-9]*$"))
+d7 <- d7 %>% dplyr::select(-matches("bar_fogg_\\w+_[0-9]*$"),
+                           -matches("drv_ffd_[0-9]*$"),
+                           -matches("w5_pastwk.*yn_[0-9]*$"),
+                           -matches("w5_hyp_.*_[0-9]*$"),
+                           -matches("w5_test_.*_[0-9]*$"),
+                           -matches("w5_symptoms_.*_[0-9]*$"),
+                           -matches("w5_rules_distance.*[0-9]*$"))
 
 
 # Join Qualtrics survey datasets ------------------------------------------
@@ -83,6 +143,8 @@ d6 <- d6 %>% dplyr::select(-matches("w4_school_neg_[0-9]*$"), -matches("w4_schoo
 make_miss_false <- function(col_to_na){
   #col_to_na <- d6_boxes[, 1]
   col_to_na[col_to_na=="99"] <- "-99"
+  col_to_na[col_to_na=="No"] <- "-99"
+  col_to_na[col_to_na=="FALSE"] <- "-99"
   col_to_na[col_to_na!="-99"] <- "TRUE"
   col_to_na[col_to_na=="-99"] <- "FALSE"
   sjlabelled::as_factor(col_to_na)
@@ -94,7 +156,7 @@ d3_breakouts <- as.data.frame(lapply(d3_breakouts, make_miss_false))
 d4_breakouts <- as.data.frame(lapply(d4_breakouts, make_miss_false))
 d5_breakouts <- as.data.frame(lapply(d5_breakouts, make_miss_false))
 d6_breakouts <- as.data.frame(lapply(d6_breakouts, make_miss_false))
-
+d7_breakouts <- as.data.frame(lapply(d7_breakouts, make_miss_false))
 
 # * Join checkbox / non-checkbox data by wave -----------------------------
 
@@ -104,11 +166,13 @@ d3 <- cbind(d3, d3_breakouts)
 d4 <- cbind(d4, d4_breakouts)
 d5 <- cbind(d5, d5_breakouts)
 d6 <- cbind(d6, d6_breakouts)
+d7 <- cbind(d7, d7_breakouts)
 
-brazil <- fetch_survey(surveyID = "SV_23NTI2qGvCT8v0V",
-                   unanswer_recode = -99, include_display_order = F,
-                   force_request = T, breakout_sets = F,
-                   time_zone = Sys.timezone(), label = F, convert = FALSE)
+# Comment out fetching Brazil until we need it
+# brazil <- fetch_survey(surveyID = "SV_23NTI2qGvCT8v0V",
+#                    unanswer_recode = -99, include_display_order = F,
+#                    force_request = T, breakout_sets = F,
+#                    time_zone = Sys.timezone(), label = F, convert = FALSE)
 
 
 # * Add origin and wave metadata ------------------------------------------
@@ -119,14 +183,16 @@ d3$origin <- paste(c("oru_export_",gsub("-","_",as.character(Sys.Date()))), coll
 d4$origin <- paste(c("master_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
 d5$origin <- paste(c("oru_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
 d6$origin <- paste(c("oru_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
-brazil$origin <- paste(c("brazil_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
+d7$origin <- paste(c("oru_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
+#brazil$origin <- paste(c("brazil_export_",gsub("-","_",as.character(Sys.Date()))), collapse = "")
 d1$wave <- 1
 d2$wave <- 1
 d3$wave <- 2
 d4$wave <- 2
 d5$wave <- 3
 d6$wave <- 4
-brazil$wave <- 1
+d7$wave <- 5
+#brazil$wave <- 1
 # hadley's style https://style.tidyverse.org/syntax.html#object-names
 names(d1) <- tolower(names(d1))
 names(d2) <- tolower(names(d2))
@@ -134,7 +200,7 @@ names(d3) <- tolower(names(d3))
 names(d4) <- tolower(names(d4))
 names(d5) <- tolower(names(d5))
 names(d6) <- tolower(names(d6))
-names(brazil) <- tolower(names(brazil))
+names(d7) <- tolower(names(d7))
 
 
 # * Fix per-wave typos before matching --------------------------------------
@@ -143,8 +209,8 @@ names(brazil) <- tolower(names(brazil))
 #Rename two fields so they match old data sets and are processed the same way
 d5 <- dplyr::rename(d5,likely_app = intentions_download)
 d5$area_code_1_text[is.na(d5$area_code_1_text)] <- d5$ausonly_postcode[is.na(d5$area_code_1_text)]
-d5$state[is.na(d5$state)] <- d5$ausonly_state[is.na(d5$state)]
-d6$state[is.na(d6$state)] <- d6$ausonly_state[is.na(d6$state)]
+d5$state[!is.na(d6$ausonly_state)] <- d5$ausonly_state[!is.na(d6$ausonly_state)]
+d6$state[!is.na(d6$ausonly_state)] <- d6$ausonly_state[!is.na(d6$ausonly_state)]
 d5 <- dplyr::rename(d5, intentions_download = intentions_download_1)
 
 #fix alcohol typo (if not already)
@@ -162,10 +228,23 @@ d <- rbind.fill(d, d3)
 d <- rbind.fill(d, d4)
 d <- rbind.fill(d, d5)
 d <- rbind.fill(d, d6)
+
+#find new variables to add that aren't checkboxes 
+new_vars <- function(newdf, new_checkboxes, olddf){
+  #newdf <- d7
+  #new_checkboxes <- d7_breakouts
+  #olddf <- d
+  old_names <- (names(newdf)%in%names(d) | names(newdf)%in%names(new_checkboxes))
+  new_names <- names(newdf)[!old_names]
+  new_names
+}
+clean_me <- new_vars(d7, d7_breakouts, d)
+
+d <- rbind.fill(d, d7)
 #d <- ?rbind.fill(d, brazil)
 d <- d[colSums(is.na(d))!=dim(d)[1]] #qualtrics has exported some deleted variables so remove the completely empty ones
 
-##pulling straight out of qualtrics creates a few ordered factorsbut the code below 
+##pulling straight out of qualtrics creates a few ordered factors but the code below 
 ##was built for processing the values from qualtrics csvs so convert them back :(
 ordered_factors <- grepl("ordered",sapply(d, class))
 d[, ordered_factors] <- lapply(d[, ordered_factors], as_character)
@@ -204,6 +283,18 @@ d <- dplyr::rename(d, aware_factors_pos = aware_factors,
                    motiv_factors_pos = motiv_factors,
                    motiv_factors_neg = motiv_factors_neg)
 
+generic_conversion <- function(var_to_change, ordered_levels, ord){
+  var_to_change <- gsub("[[:punct:]]", "", var_to_change) #sometimes labels aren't matching due to differences in ascii so remove punctuation
+  ordered_levels <- gsub("[[:punct:]]", "", ordered_levels)
+  var_to_change <- gsub("\\s+", " ", var_to_change)
+  ordered_levels <- gsub("\\s+", " ", ordered_levels)
+  #removing punctuation sometimes leads to duplicate spaces
+  var_to_change[var_to_change=="-99"] <- NA
+  var_to_change[var_to_change==-99] <- NA
+  var_to_change <- factor(var_to_change, ordered = ord,
+                          levels = ordered_levels)
+  return(var_to_change)
+}
 
 ## Match wave 1 and wave 2 participant IDs
 library(readxl)
@@ -241,7 +332,7 @@ d <- dplyr::select(d, -consent, -q_url)
 
 #remove preview responses and those less than 5 minutes
 d <- dplyr::filter(d, status != "Survey Preview")
-d <- dplyr::filter(d, status != "test")
+#d <- dplyr::filter(d, status != "test")
 d <- dplyr::filter(d, `duration (in seconds)` >= (5*60) )
 d <- dplyr::filter(d, `duration (in seconds)` <= (24*60*60) )
 
@@ -280,8 +371,12 @@ convert_always_never <- function(var_to_change){
                              levels = c("Never", "Rarely",
                                         "Sometimes", "Often", "Always"))
 }
+
 beh_questions <- c(grep("^beh_",names(d)),grep("w4_int_beh_",names(d)))
 d[, beh_questions] <- lapply(d[, beh_questions], convert_always_never)
+
+ff_physcontact <- grep("ff_physcontact", names(d))
+d[, ff_physcontact] <- lapply(d[, ff_physcontact], convert_always_never)
 
 # convert always -- very often variables
 convert_very_often_never <- function(var_to_change){
@@ -291,7 +386,6 @@ convert_very_often_never <- function(var_to_change){
 }
 acpq <- grep("acpq_",names(d))
 d[, acpq] <- lapply(d[, acpq], convert_very_often_never)
-
 
 # convert awareness variables
 convert_awareness <- function(var_to_change){
@@ -359,11 +453,18 @@ d[, swb_questions] <- lapply(d[, swb_questions], keep_numbers_only)
 d[, swb_questions] <- lapply(d[, swb_questions], as.numeric)
 # convert to same scale 0-10
 d$swb4[d$wave==1] <- d$swb4[d$wave==1] - 1
+
+d$hh_size <- keep_numbers_only(d$hh_size)
+d$ses_ladder <- keep_numbers_only(d$ses_ladder)
+
+cald_atsi <- grepl("cald_atsi", names(d))
+d[, cald_atsi] <- lapply(d[, cald_atsi],make_miss_false)
+
 # convert worry questions into ordered factors
 worry_labs <- "1 - Don't worry at all (1)	2 (2)	3 - Worry a little (3)	4 (4)	5 - Worry a fair bit (5)	6 (6)	7 - Worry a lot (7)"
 
 convert_labs_to_list <- function(labs_to_convert){
-  labs_to_convert <- gsub("\\([0-9]\\)", "",labs_to_convert)
+  labs_to_convert <- gsub("\\([0-9]+\\)", "",labs_to_convert)
   labs_to_convert <- gsub(" $", "",labs_to_convert)
   strsplit(labs_to_convert," \t")
 }
@@ -418,10 +519,50 @@ o	5  (5)
 o	6  (6) 
 o	7 - Very good knowledge  (7)"
 
-d$perceived_knowledge <- factor(d$perceived_knowledge, ordered = T,
-                                   levels = convert_radio_to_labs(knowledge_labs))
-d$perceived_knowledge2 <- factor(d$perceived_knowledge2, ordered = T,
-                                    levels = convert_radio_to_labs(knowledge_labs))
+w4_rules_know <- grepl("_knowledge", names(d))
+d[, w4_rules_know] <- lapply(d[, w4_rules_know],
+                          generic_conversion,
+                          convert_radio_to_labs(knowledge_labs), T)
+
+d$w5_rules_visit <- generic_conversion(d$w5_rules_visit,
+                                       convert_radio_to_labs("o	No visitors  (0) 
+o	Up to 5 visitors  (5) 
+o	Up to 10 visitors  (10) 
+o	Up to 20 visitors  (20) 
+o	Up to 75 visitors  (75) 
+o	Up to 100 visitors  (100) 
+o	Other limit on visitors  (998) 
+o	No limit on visitors  (999) 
+o	Don't know  (99) "), T)
+
+d$w5_rules_patrons <- generic_conversion(d$w5_rules_patrons,
+                                       convert_radio_to_labs("o	No customers  (0) 
+o	Up to 10 customers  (10) 
+o	Up to 20 customers  (20) 
+o	Up to 50 customers  (50) 
+o	Other limit on customers  (998) 
+o	No limit on customers  (999) 
+o	Don't know  (99)"), T)
+
+notest_labs <- "o	Didn't think I had COVID-19  (1) 
+o	I thought my symptoms were too mild to get tested  (2) 
+o	Didn't know where to get tested  (3) 
+o	I thought I needed to pay for the test  (4) 
+o	I didn't want to wait to get tested  (5) 
+o	I couldn't miss work to get tested  (6) 
+o	Couldn't get to a testing facility  (7) 
+o	I was worried about contracting COVID-19 in the process of getting tested  (8) 
+o	I was worried about passing COVID-19 on to others in the process of getting tested  (9) 
+o	The test is painful/uncomfortable  (10) 
+o	Didn't want to know whether I had COVID-19  (11) 
+o	There are not many cases in my area  (12) 
+o	Didn't want to take up resources needed for others  (13) 
+o	Other (please specify)  (14)"
+d$w5_hyp_notest_m <- generic_conversion(d$w5_hyp_notest_m,
+                                        convert_radio_to_labs(notest_labs), F)
+d$w5_symptoms_notest_m <- generic_conversion(d$w5_symptoms_notest_m,
+                                        convert_radio_to_labs(notest_labs), F)
+
 
 symp_labs <- "Related to COVID-19 (1)	Not related to COVID-19 (2)	Don't know"
 
@@ -452,6 +593,13 @@ o	Don't know  (99)"
 
 d$transmission <- factor(d$transmission,
                             levels = convert_radio_to_labs(transmission_labs))
+
+symptom_labs <- convert_labs_to_list("Mild (1)	Moderate (2)	Severe (3)	Did not experience this symptom (99)")
+w5_symp <- grepl("w5_test_symp*", names(d))
+
+d[, w5_symp] <- lapply(d[, w5_symp],
+                       generic_conversion,
+                       unlist(symptom_labs), T)
 
 prob_labs <- "o	1 - Extremely unlikely  (1) 
 o	2 - Unlikely  (2) 
@@ -490,6 +638,9 @@ d$othb_alcohol_alt <- keep_numbers_only(d$othb_alcohol_alt)
 likely_qns <- grep("likely_", names(d))
 d[, likely_qns] <- lapply(d[, likely_qns], keep_numbers_only)
 
+
+d$w5_pastwk_ff_occ <- keep_numbers_only(d$w5_pastwk_ff_occ)
+d$w5_int_ff_occ <- keep_numbers_only(d$w5_int_ff_occ)
 
 #change predictions about time period to ordered factors
 prediction_labs <- c("Less than one month",
@@ -634,12 +785,6 @@ o	Doctorate  (6)"
 d$education <- factor(d$education, ordered = T,
                          levels = convert_radio_to_labs(education_labs))
 
-d$health_hcw <- factor(d$health_hcw, levels = c("Yes", "No", "Not sure"))
-d$health <- factor(d$health, levels = c("Yes", "No"))
-d$chronic <- factor(d$chronic, levels = c("Yes", "No", "Don't know"))
-d$apptxt_prebeh <- factor(d$apptxt_prebeh, levels = c("Yes", "No", "Don't know"))
-d$country <- factor(d$country, levels = unique(d$country))
-
 w3_rules_knowledge_labs <- "o	1 - Very poor knowledge  (1) 
 o	2  (2) 
 o	3  (3) 
@@ -655,7 +800,6 @@ d[, knowledge_items] <- lapply(d[, knowledge_items],
                           levels = convert_radio_to_labs(w3_rules_knowledge_labs))
 
 d$w3_rules_self <- convert_always_never(d$w3_rules_self)
-d$screen_job <- factor(d$screen_job)
 
 loop_radios <- "o	work at your job  (1) 
 o	purchase prepared food or drink from a restaurant or cafe  (5) 
@@ -667,6 +811,8 @@ loop_radios <- convert_radio_to_labs(loop_radios)
 
 w4_test_items <- grep("w4_test", names(d))
 d[, w4_test_items] <- lapply(d[, w4_test_items], as_numeric)
+d$ed_work_inperson <- as_numeric(d$ed_work_inperson)
+d$ed_work_remote <- as_numeric(d$ed_work_remote)
 
 #attach the labels then convert to te best format
 pastwk_beh_vars <- grep("w3_pastwk_beh$", names(d))
@@ -688,7 +834,8 @@ set_label(d[, pastwk_remote]) <- paste("Last week, on how many days did you",
                                          loop_radios,
                                          "remotely?")
 
-risky_vars <- grepl("w3_risk$", names(d))|grepl("w4_wkex_risk", names(d))
+risky_vars <- grepl("w3_risk|w4_wkex_risk|.*_w3_risk", names(d))
+
 risky_labs <- "o	1 - Not at all risky  (1) 
 o	2  (2) 
 o	3  (3) 
@@ -697,22 +844,18 @@ o	5  (5)
 o	6  (6) 
 o	7 - Extremely risky  (7)"
 
-generic_converstion <- function(var_to_change, ordered_levels, ord){
-  var_to_change <- factor(var_to_change, ordered = ord,
-                          levels = ordered_levels)
-}
-
-risky_questions_w4 <- get_label(d[, names(d)[risky_vars][-1:-6]])
+labels_to_fix <- grepl(".*_w3_risk", names(d))
+risky_questions_w4 <- get_label(d[, names(d)[labels_to_fix]])
 
 d[, risky_vars] <- lapply(d[, risky_vars],
-                          generic_converstion,
+                          generic_conversion,
                           convert_radio_to_labs(risky_labs), T)
 
-set_label(d[, names(d)[risky_vars][1:6]]) <- paste("Considering the COVID-19 situation, how risky is it for you to",
+set_label(d[, names(d)[labels_to_fix]]) <- paste("Considering the COVID-19 situation, how risky is it for you to",
                                        loop_radios,
-                                       "in person?")
-set_label(d[, names(d)[risky_vars][-1:-6]]) <- paste("How risky is...?",
-                                                     risky_questions_w4, sep = " ")
+                                       "?")
+set_label(d[, names(d)[grepl("w4_wkex_risk", names(d))]]) <- paste("How risky is...?",
+                                                                  get_label(d[, grepl("w4_wkex_risk", names(d))]), sep = " ")
 
 intention_vars <- grep("w3_int$", names(d))
 d[, intention_vars] <- lapply(d[, intention_vars], keep_numbers_only)
@@ -760,7 +903,7 @@ set_label(d$socialise_w4_int_ffsocial) <- "On how many of those days do you inte
 
 pt_risk <- grep("^w3_pt_risk", names(d))
 d[, pt_risk] <- lapply(d[, pt_risk],
-                          generic_converstion,
+                          generic_conversion,
                           convert_radio_to_labs(risky_labs), T)
 set_label(d[, pt_risk]) <- paste("Considering the COVID-19 situation, how risky is it for you to use the following methods of transport?",
                                  transports)
@@ -794,7 +937,7 @@ likely_labs <- "Much less likely (1)	Less likely (2)	Have no impact (3)	More lik
 
 measure_items <- grep("^w3_pt_measures", names(d))
 d[, measure_items] <- lapply(d[, measure_items],
-                       generic_converstion,
+                       generic_conversion,
                        unlist(convert_labs_to_list(likely_labs)),
                        T)
 d$w3_pt_peak <- factor(d$w3_pt_peak)
@@ -804,7 +947,7 @@ set_label(d[, measure_items]) <- paste("Consider the following public transport 
 measure_items <- grep("w4_wkex_measures", names(d))
 measure_labels <- get_label(d[, names(d)[measure_items]])
 d[, measure_items] <- lapply(d[, measure_items],
-                             generic_converstion,
+                             generic_conversion,
                              unlist(convert_labs_to_list(likely_labs)),
                              T)
 set_label(d[, names(d)[measure_items]]) <- paste("Rate each of the measures in terms of whether it would make you more likely or less likely to attend work IN PERSON, if enacted.",
@@ -817,7 +960,7 @@ If travel was discounted in off-peak hours (6)
 If I had access to real time information about which services were more crowded (7) "
 peak_items <- grep("^w3_pt_peak_measures", names(d))
 d[, peak_items] <- lapply(d[, peak_items],
-                             generic_converstion,
+                             generic_conversion,
                              unlist(convert_labs_to_list(likely_labs)),
                              T)
 
@@ -843,7 +986,7 @@ If most people chose to wear a face mask when visiting shops and public places (
 Attention check, 3 equals attentive"
 econ_items <- grep("^w3_econ_measures", names(d))
 d[, econ_items] <- lapply(d[, econ_items],
-                          generic_converstion,
+                          generic_conversion,
                           unlist(convert_labs_to_list(likely_labs)),
                           T)
 set_label(d[, econ_items]) <- paste("Consider the following economic COVID-19 measures. Rate each of the measures in terms of whether it would make you more likely or less likely to visit shops and public places, if enacted.",
@@ -861,24 +1004,13 @@ interventions <- grep("^apptxt", names(d))[-1]
 d[, interventions] <- lapply(d[, interventions], is.na)
 d[, interventions] <- !d[, interventions]
 
-d$children <- sjlabelled::as_factor(d$children)
-d$cald_cob <- sjlabelled::as_factor(d$cald_cob)
-d$cald_lote <- sjlabelled::as_factor(d$cald_lote)
+
 d$cald_english <-factor(d$cald_english, ordered = T,
                         levels = c("Not at all",
                                    "Not well",
                                    "Well",
                                    "Very well"))
 
-# @@AS 2020-06-21 - no longer needed because the item is split into checkboxes
-# atsi_labels <- "No  (1) 
-# Yes, Aboriginal  (2) 
-# Yes, Torres Strait Islander  (3)"
-# d$cald_atsi <- factor(d$cald_atsi, levels = convert_radio_to_labs(atsi_labels))
-d$pregnant <- sjlabelled::as_factor(d$pregnant)
-
-employ_factors <- grepl("employ", names(d)) & !grepl("_arr", names(d))
-d[, employ_factors] <- lapply(d[, employ_factors], factor)
 
 #re-order the factors for household income
 d$hh_income <- factor(d$hh_income, ordered = T,
@@ -989,9 +1121,93 @@ d$state_aus <- factor(d$state, levels = c("Australian Capital Territory",
                                           "Tasmania",
                                           "Victoria",
                                           "Western Australia"))
-d$ausonly_state <- as_factor(d$ausonly_state)
+
+lcri <- grep("lcri_|mod_peb_comf", names(d))
+d[, lcri] <- lapply(d[, lcri],
+                    generic_conversion,
+                    unlist(convert_labs_to_list("Strongly disagree (1)	Disagree (2)	Neutral (3)	Agree (4)	Strongly agree (5)")),
+                    T)
+d$mod_peb_lcb_temp <- generic_conversion(d$mod_peb_lcb_temp,
+                   convert_radio_to_labs("o	Never  (1) 
+o	Rarely  (2) 
+o	Sometimes  (3) 
+o	Often  (4) 
+o	Very often  (5) 
+o	Always  (6)"),T)
+
+d$mod_peb_lci_fridge <- generic_conversion(d$mod_peb_lci_fridge,
+                                           convert_radio_to_labs("o	Definitely do not intend  (1) 
+o	Probably do not intend  (2) 
+o	Undecided  (3) 
+o	Probably do intend  (4) 
+o	Definitely do intend  (5) 
+o	Already have one  (77)"),T)
+
+d$mod_peb_lci_washing <- generic_conversion(d$mod_peb_lci_washing,
+                                           convert_radio_to_labs("o	Definitely do not intend  (1) 
+o	Probably do not intend  (2) 
+o	Undecided  (3) 
+o	Probably do intend  (4) 
+o	Definitely do intend  (5) 
+o	Already have one  (77)"),T)
+
+d$mod_peb_lci_heat <- generic_conversion(d$mod_peb_lci_heat,
+                                           convert_radio_to_labs("o	Definitely do not intend  (1) 
+o	Probably do not intend  (2) 
+o	Undecided  (3) 
+o	Probably do intend  (4) 
+o	Definitely do intend  (5) 
+o	I already have an energy efficient heating system with 5-6 star energy rating  (77) 
+o	I have a reverse cycle heating and cooling system  (88)"),T)
+
+d$mod_peb_lci_cool <- generic_conversion(d$mod_peb_lci_cool,
+                                         convert_radio_to_labs("o	Definitely do not intend  (1) 
+o	Probably do not intend  (2) 
+o	Undecided  (3) 
+o	Probably do intend  (4) 
+o	Definitely do intend  (5) 
+o	I already have an energy efficient cooling system with 5-6 star energy rating  (77) 
+o	I have a reverse cycle heating and cooling system  (88)"),T)
+
+# Factor variables that are coming in as characters ------------------------
+vars_to_factor <- c("health_hcw",
+                    "apptxt_prebeh",
+                    "chronic",
+                    "health",
+                    "w5_test_gen",
+                    "food_space",
+                    "food_check",
+                    "w5_covid",
+                    "w4_test_homewait",
+                    "w5_test_pst_week",
+                    "country",
+                    "screen_job",
+                    "residency",
+                    "children",
+                    "cald_cob",
+                    "cald_lote",
+                    "pregnant",
+                    "ausonly_state",
+                    "state",
+                    "w3_pt_use",
+                    "w4_school_child_ch",
+                    "w4_school_child_mode",
+                    "w4_school_adult_ch",
+                    "w4_school_adult_mode",
+                    "w4_wkex_permit",
+                    "long_optin",
+                    "origin",
+                    "w5_test_reason_main",
+                    "w5_test_location",
+                    names(d)[grepl("pol_",names(d))],
+                    names(d)[grepl("employ", names(d)) & !grepl("_arr", names(d))],
+                    names(d)[grepl("food_[a-z]*_pastwk", names(d))],
+                    names(d)[grepl("food_[a-z]*_precovid", names(d))])
+
+
+d[, vars_to_factor] <- lapply(d[, vars_to_factor], factor)
+
 d$state_aus[is.na(d$state_aus)] <- d$ausonly_state[is.na(d$state_aus)]
-#table(d$state_aus[d$wave==4])
 
 library(readxl)
 regions <- read_xls("CG_POSTCODE_2017_RA_2016.xls", 4, skip = 5)
@@ -1006,18 +1222,17 @@ d$region_aus_type[which_aus] <- regions$RA_NAME_2016[match(d[which_aus,names(d)=
 d$region_aus_type <- as_factor(d$region_aus_type)
 # @@AS I somehow broke this inhab_labels, possibly due to an PC/MAC encoding issue for "less
 # than or equal to" (it shows as garbled characters on my screen)
-inhab_labels <- "o	??? 5,000 people  (1) 
+inhab_labels <- "≤ 5,000 people  (1) 
 o	5,001 - 20,000  (2) 
 o	20,001 - 100,000  (3) 
 o	100,001 - 500,000  (4) 
 o	> 500,000 people  (5)"
+
 d$inhabitants <- factor(d$inhabitants, ordered = T,
                            levels = convert_radio_to_labs(inhab_labels))
-d$children <- factor(d$children, levels = c("Yes", "No"))
-
 
 sac_cols <- grep("_sac$",names(d))
-names(d)[sac_cols]
+
 sac_items <- as.data.frame(d[, sac_cols])
 sac_col_to_extract <- which(!is.na(sac_items), arr.ind = T)
 sac_col_to_extract <- sac_col_to_extract[order(sac_col_to_extract[, 1]), ]
@@ -1031,36 +1246,6 @@ d$will_you_stand_against_corona <- factor(will_you_stand_against_corona,
                                                         "-99"))
 d <- d[, -sac_cols]
 
-# @@ AS 2020-06-21 Here are the current codes for each variable. Pledges are a bit broken so I have commented this out.
-# ???	Wash my hands for 20 seconds with soap and water, or alcohol-based hand sanitiser  (1) 
-# ???	Cover my coughs and sneezes with my elbow or a tissue  (4) 
-# ???	NOT touch my face with unwashed hands  (5) 
-# ???	Keep more than 2 metres (6 ft) away from people in public, school, or workplace  (6) 
-# ???	Practice physical distancing (e.g., by staying at home)  (7) 
-# 
-# intervention_qns <- grep("_pledge$", names(d))
-# 
-# names(d)[intervention_qns]
-# d$condition <- NA
-# d$all_commits <- paste(d$`1_pledge`,d$`2_pledge`,d$`3_pledge`,
-#                        d$`4_pledge`,d$`5_pledge`,d$`6_pledge`)
-# d$pledge_wash <- grepl("wash", d$all_commits)&!is.na(d$all_commits)
-# d$pledge_sneeze <- grepl("sneeze", d$all_commits)&!is.na(d$all_commits)
-# d$pledge_face <- grepl("unwashed", d$all_commits)&!is.na(d$all_commits)
-# d$pledge_2m <- grepl("workplace", d$all_commits)&!is.na(d$all_commits)
-# d$pledge_distancing <- grepl("distancing", d$all_commits)&!is.na(d$all_commits)
-# d$pledge_sum <- rowSums(dplyr::select(d,contains("pledge_")))
-# response_cols <- as.data.frame(!is.na(d[, intervention_qns]))
-# response_cols$no_intervention <- rowSums(response_cols)==0
-# d$condition <- apply(response_cols, 1, which)
-# d$condition <- factor(d$condition)
-# levels(d$condition) = list("Basic pledge" = 1,
-#                            "Self-preservation" = 2,
-#                            "Positive affect" = 3,
-#                            "Social proof" = 4,
-#                            "Negative affect" = 5,
-#                            "Control group" = 6)
-# table(d$condition)
 d <- dplyr::select(d, -contains("_pledge")) %>%
   dplyr::select(-contains("all_commits")) %>%
   dplyr::select(-source, -sc0, -demo_skip)
@@ -1093,66 +1278,18 @@ d$agegroup[which(d$age >= 60 & d$age <= 69)] <- "60-69"
 d$agegroup[which(d$age >= 70 & d$age <= 79)] <- "70-79"
 d$agegroup[which(d$age >= 80)] <- "80 and over"
 
-# split_beh_inperson_checkboxes <- function(df, v){
-#   # debugging
-#   # df <- d
-#   # v <- "w4_beh_inperson_foodcourt_yn"
-#   vec <- df[, v]
-#   vec <- gsub("\'","",vec)
-#   newdf <- data.frame(rep(NA, length(vec)))
-#   newdf$i_did <- grepl("I did this last week", vec)
-#   newdf$i_will <- grepl("I intend to do this", vec)
-#   newdf <- newdf[, -1]
-#   newdf <- as.data.frame(lapply(newdf, as.character))
-#   names(newdf) <- paste(v, names(newdf), sep = "_")
-#   question_labels <- c("I did this last week (Mon 25 May - Sun 31 May)",
-#                        "I intend to do this over the next 7 days")
-#   newdf <- as.data.frame(lapply(newdf, sjlabelled::as_numeric))
-#   t_f_labels <- c(1:2)
-#   names(t_f_labels) <- c("FALSE", "TRUE")
-#   for(i in 1:dim(newdf)[2]){
-#     attr(newdf[,i], "label") <- paste(#c(attr(vec, "label"),
-#       question_labels[i])#,
-#     #collapse =" ")
-#     attr(newdf[,i], "labels") <- t_f_labels
-#   }
-#   newdf[is.na(vec),] <- NA
-#   newdf
-# }
-# 
-# for(i in names(d)[grep("w4_beh_", names(d))]){
-#   d <- cbind(d, split_beh_inperson_checkboxes(d, i))
-# }
 
 names(d)[grep("w4_beh_", names(d))] <- gsub("_1", "_i_did",names(d)[grep("w4_beh_", names(d))])
-names(d)[grep("w4_beh_", names(d))] <- gsub("_1", "_i_will",names(d)[grep("w4_beh_", names(d))])
-
-
-
+names(d)[grep("w4_beh_", names(d))] <- gsub("_2", "_i_will",names(d)[grep("w4_beh_", names(d))])
 
 logical_variables <- grepl("logical",sapply(d, class))
 d[, logical_variables] <- lapply(d[, logical_variables], sjlabelled::as_numeric)
-
-## factor pol_ variables
-pol_variables <- grepl("pol_",names(d))
-d[,pol_variables] <- lapply(d[,pol_variables], sjlabelled::as_factor)
-
 ## remove incorrect attention check people
 #table(d$attn_check_3)
 d <- dplyr::filter(d, is.na(attn_check_1) | attn_check_1=="Never")
 d <- dplyr::filter(d, is.na(attn_check_3) | attn_check_3=="2")
 d <- dplyr::filter(d, is.na(attn_check_3_1) | attn_check_3_1=="3")
 
-
-
-d$w3_pt_use <- as_factor(d$w3_pt_use)
-d$ausonly_state <- as_factor(d$ausonly_state)
-d$state <- as_factor(d$state)
-d$w4_wkex_permit <- as_factor(d$w4_wkex_permit)
-d$w4_school_child_ch <- as_factor(d$w4_school_child_ch)
-d$w4_school_child_mode <- as_factor(d$w4_school_child_mode)
-d$w4_school_adult_ch <- as_factor(d$w4_school_adult_ch)
-d$w4_school_adult_mode <- as_factor(d$w4_school_adult_mode)
 
 ##Re-apply names to variables
 attributes_saved <- names(d)%in%names(saved_attributes) #find variables with saved attributes
@@ -1169,14 +1306,19 @@ set_label(d$othb_treat_alt) <- "Used natural or alternative medicines to prevent
 set_label(d$othb_treat_conv) <- "Used prescribed medicines to prevent or treat COVID-19"
 set_label(d$beh_distance) <- "Keep physical distance from people in public, school, or workplace"
 
+w4_ints <- grepl("w4_txtffd_", names(d))
+d[, w4_ints] <- lapply(d[, w4_ints],make_miss_false)
+
+#Checking what's still a text variable:
+#names(d)[sapply(d, is.character)]
 
 #table(d$agegroup)
 #round(prop.table(table(d$beh_stayhome))*100)
 #round(prop.table(table(d$beh_touch))*100)
+
 library(osfr)
 osf_auth()
 scrub <- osf_retrieve_node("q7gck")
-
 # file_name <- paste(c("~/Google Drive/Research/READI/READI COVID19/Coronavirus living survey/05. Data and Analysis/READI COVID Cleaned Data and Survey/",
 #                      gsub("-","_",as.character(Sys.Date())),"_readi_covid_cleaned_sensitive.RDS"), collapse = "") #dynamic updating with dates
 file_name_sensitive <- "latest_readi_covid_cleaned_sensitive.RDS" #using version control
