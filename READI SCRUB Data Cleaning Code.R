@@ -1000,6 +1000,81 @@ d[, econ_diags] <- lapply(d[, econ_diags],
                           convert_agree_5)
 set_label(d[, econ_diags]) <- econ_diag_labs
 
+
+wkex_transport_modes_precovid_labels <- "Walk for 5 minutes or more  (1) 
+Cycle  (2) 
+Private vehicle (e.g., car, truck, motorbike, carpool)  (3) 
+Taxi or ride share (e.g., Uber)  (4) 
+Train  (5) 
+Bus  (6) 
+Tram or light rail  (7) 
+Subway, metro or rapid transit  (8) 
+Ferry  (9) 
+None - I worked 100% remotely prior to COVID-19  (10)"
+
+wkex_transport_modes_precovid_items <- grep("^w4_wkex_trans_precov_", names(d))
+
+set_label(d[, wkex_transport_modes_precovid_items]) <- convert_radio_to_labs(wkex_transport_modes_precovid_labels)
+
+wkex_transport_modes_int_labels <- "Walk for 5 minutes or more  (1) 
+Cycle  (2) 
+Private vehicle (e.g., car, truck, motorbike, carpool)  (3) 
+Taxi or ride share (e.g., Uber)  (4) 
+Train  (5) 
+Bus  (6) 
+Tram or light rail  (7) 
+Subway, metro or rapid transit  (8) 
+Ferry  (9) "
+
+# * Wave 4 work and school blocks -----------------------------------------
+
+wkex_transport_modes_int_items <- grep("^w4_wkex_trans_int", names(d))
+
+set_label(d[, wkex_transport_modes_int_items]) <- convert_radio_to_labs(wkex_transport_modes_int_labels)
+
+wkex_inperson_labels <- "My employer has asked me to work in person  (1) 
+My direct manager has asked me to work in person  (2) 
+I prefer to work in person  (3) 
+It is easier to perform my work duties at my usual workplace  (4) 
+My job can only be done in person  (5) 
+My home is not a suitable place to work  (6) 
+Working in person is a better fit with my non-work lifestyle needs  (7) 
+Other (please specify)  (8)"
+
+wkex_inperson_items <- grep("^w4_wkex_inperson_[0-9]$", names(d))
+
+set_label(d[, wkex_inperson_items]) <- convert_radio_to_labs(wkex_inperson_labels)
+
+wkex_remote_labels <- "My employer has asked me to work from home  (1) 
+My direct manager has asked me to work from home  (2) 
+I prefer to work from home  (3) 
+It is easier to perform my work duties at home  (4) 
+I can't always access my usual workplace  (5) 
+There is less risk to work from home  (6) 
+Working from home is a better fit with my non-work lifestyle needs  (7) 
+Other (please specify)  (8) "
+
+
+wkex_remote_items <- grep("^w4_wkex_remote_[0-9]$", names(d))
+
+set_label(d[, wkex_remote_items]) <- convert_radio_to_labs(wkex_remote_labels)
+
+
+school_travelmode_labels <- "Public transport alone or with siblings  (1) 
+Public transport with me or another carer  (2) 
+Walk or ride alone or with siblings  (3) 
+Walk or ride with me or another carer  (4) 
+Private vehicle alone or with siblings  (5) 
+Private vehicle with me or another carer  (6)"
+
+school_travelmode_items <- grep("^w4_school_travelmode_[0-9]$", names(d))
+
+set_label(d[, school_travelmode_items]) <- convert_radio_to_labs(school_travelmode_labels)
+
+# fix misspelling of item
+ d <- d %>%
+   rename(w4_rules_knowledge_gatherpublic = w4_rules_kowledge_gatherpublic)
+
 interventions <- grep("^apptxt", names(d))[-1]
 d[, interventions] <- lapply(d[, interventions], is.na)
 d[, interventions] <- !d[, interventions]
@@ -1220,6 +1295,22 @@ d$region_aus <- as_numeric(d$region_aus)
 d$region_aus_type[which_aus] <- regions$RA_NAME_2016[match(d[which_aus,names(d)=="area_code"],
                                                 regions$POSTCODE_2017...1)]
 d$region_aus_type <- as_factor(d$region_aus_type)
+
+
+d$region_aus_type <- forcats::fct_recode(d$region_aus_type,
+                  "Major city" = "Major Cities of Australia",
+                  "Inner regional" = "Inner Regional Australia",
+                  "Outer regional" = "Outer Regional Australia",
+                  "Remote" = "Remote Australia",
+                  "Very Remote" = "Very Remote Australia")
+
+d$region_aus_type <- forcats::factor(d$region_aus_type,
+                    levels = c("Major city",
+                    "Inner regional",
+                    "Outer regional",
+                    "Remote",
+                    "Very remote"))
+
 # @@AS I somehow broke this inhab_labels, possibly due to an PC/MAC encoding issue for "less
 # than or equal to" (it shows as garbled characters on my screen)
 inhab_labels <- "≤ 5,000 people  (1) 
