@@ -209,16 +209,13 @@ names(d7) <- tolower(names(d7))
 #Rename two fields so they match old data sets and are processed the same way
 d5 <- dplyr::rename(d5,likely_app = intentions_download)
 d5$area_code_1_text[is.na(d5$area_code_1_text)] <- d5$ausonly_postcode[is.na(d5$area_code_1_text)]
-d5$state[!is.na(d6$ausonly_state)] <- d5$ausonly_state[!is.na(d6$ausonly_state)]
+d5$state[!is.na(d5$ausonly_state)] <- d5$ausonly_state[!is.na(d5$ausonly_state)]
 d6$state[!is.na(d6$ausonly_state)] <- d6$ausonly_state[!is.na(d6$ausonly_state)]
 d5 <- dplyr::rename(d5, intentions_download = intentions_download_1)
 
 #fix alcohol typo (if not already)
 # names(d3)[names(d3)=="othb_alocohol"] <- "othb_alcohol" # Fixed @@AS 2020-06-21
 # names(d4)[names(d4)=="othb_alocohol"] <- "othb_alcohol"
-d2 <- dplyr::rename(d2, conf_natleaders = conf_leaders,
-                    conf_stateleaders = conf_7)
-
 
 # * Join waves ------------------------------------------------------------
 
@@ -360,7 +357,7 @@ d <- d %>% filter(responseid != "R_b96aPTGwlYJg2hX", # Luca
 d <- arrange(d, desc(startdate))
 
 # remove unnecessary meta-data
-head(d)
+#head(d)
 
 d <- dplyr::select(d, -enddate:-userlanguage)
 d <- dplyr::select(d, -contains("email")) 
