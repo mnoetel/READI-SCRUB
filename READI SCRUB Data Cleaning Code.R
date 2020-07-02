@@ -111,14 +111,14 @@ d6 <- d6 %>% dplyr::select(-matches("w4_school_neg_[0-9]*$"),
 # * W5 ORU ------------------------------------------------------------------
 
 
-d7 <- fetch_survey(surveyID = "SV_ezDxu1Uhp2iMd6t",
+d7 <- qualtRics::fetch_survey(surveyID = "SV_ezDxu1Uhp2iMd6t",
                    unanswer_recode = -99, include_display_order = F,
                    force_request = T, breakout_sets = T,
                    time_zone = Sys.timezone(), label = T, fileEncoding = "UTF-8")
 
 #code to check that the checkboxes below actuall pull the right checkboxes
 test_grepl <- function(match_this){names(d7)[grepl(match_this, names(d7))]}
-#test_grepl("w5_symptoms_.*_[0-9]*$")
+#test_grepl("drv_ffd_[0-9]*$")
 
 d7_breakouts <- d7 %>% dplyr::select(matches("bar_fogg_\\w+_[0-9]*$"),
                                      matches("drv_ffd_[0-9]*$"),
@@ -209,15 +209,17 @@ names(d7) <- tolower(names(d7))
 #Rename two fields so they match old data sets and are processed the same way
 d5 <- dplyr::rename(d5,likely_app = intentions_download)
 d5$area_code_1_text[is.na(d5$area_code_1_text)] <- d5$ausonly_postcode[is.na(d5$area_code_1_text)]
-d5$state[!is.na(d6$ausonly_state)] <- d5$ausonly_state[!is.na(d6$ausonly_state)]
+d5$state[!is.na(d5$ausonly_state)] <- d5$ausonly_state[!is.na(d5$ausonly_state)]
 d6$state[!is.na(d6$ausonly_state)] <- d6$ausonly_state[!is.na(d6$ausonly_state)]
 d5 <- dplyr::rename(d5, intentions_download = intentions_download_1)
+d6$w4_rules_knowledge_gatherpublic[!is.na(d6$w4_rules_kowledge_gatherpublic)] <- d6$w4_rules_kowledge_gatherpublic[!is.na(d6$w4_rules_kowledge_gatherpublic)]
+
 
 #fix alcohol typo (if not already)
 # names(d3)[names(d3)=="othb_alocohol"] <- "othb_alcohol" # Fixed @@AS 2020-06-21
 # names(d4)[names(d4)=="othb_alocohol"] <- "othb_alcohol"
-d2 <- dplyr::rename(d2, conf_natleaders = conf_leaders,
-                    conf_stateleaders = conf_7)
+# d2 <- dplyr::rename(d2, conf_natleaders = conf_leaders,
+#                     conf_stateleaders = conf_7)
 
 
 # * Join waves ------------------------------------------------------------
@@ -360,7 +362,7 @@ d <- d %>% filter(responseid != "R_b96aPTGwlYJg2hX", # Luca
 d <- arrange(d, desc(startdate))
 
 # remove unnecessary meta-data
-head(d)
+# head(d)
 
 d <- dplyr::select(d, -enddate:-userlanguage)
 d <- dplyr::select(d, -contains("email")) 
@@ -673,7 +675,7 @@ convert_agree_5 <- function(var_to_change){
   var_to_change <- factor(var_to_change, ordered = T,
                           levels = agree_labs_5)
 }
-drv_questions <- grepl("drv_",names(d)) & !grepl("text",names(d))
+drv_questions <- grepl("drv_",names(d)) & !grepl("text",names(d)) & !grepl("ffd",names(d)) # @@AS 2020-07-02 - stopped some drivers getting overwritten
 d[, drv_questions] <- lapply(d[, drv_questions], convert_agree_5)
 
 other_labs <- "Not at all (1)	A little (2)	A moderate amount (3)	A lot (4)	A great deal (5)	N/A (99)"
@@ -1072,9 +1074,10 @@ school_travelmode_items <- grep("^w4_school_travelmode_[0-9]$", names(d))
 set_label(d[, school_travelmode_items]) <- convert_radio_to_labs(school_travelmode_labels)
 
 # fix misspelling of item
- d <- d %>%
-   rename(w4_rules_knowledge_gatherpublic = w4_rules_kowledge_gatherpublic)
+ # d <- d %>%
+ #   rename(w4_rules_knowledge_gatherpublic = w4_rules_kowledge_gatherpublic)
 
+ 
 interventions <- grep("^apptxt", names(d))[-1]
 d[, interventions] <- lapply(d[, interventions], is.na)
 d[, interventions] <- !d[, interventions]
@@ -1135,8 +1138,8 @@ d$intentions_total <- d$intentions_download + d$intentions_share + d$intentions_
 manip_check_items <- grepl("manipulation_check_", names(d))
 d[d$wave != 2, manip_check_items] <- NA
 
-aut_control_items <- grep("aut|cont|safe_", names(d))
-d[d$wave != 2, aut_control_items] <- NA
+# aut_control_items <- grep("aut|cont|safe_", names(d)) # @@ AS 2020-07-02 "cont" matches other items, such as w5_ff_physcontact. Omitted for now
+# d[d$wave != 2, aut_control_items] <- NA
 
 pledge_items <- grep("pledge_", names(d))
 d[d$wave != 1, pledge_items] <- NA
@@ -1304,7 +1307,7 @@ d$region_aus_type <- forcats::fct_recode(d$region_aus_type,
                   "Remote" = "Remote Australia",
                   "Very Remote" = "Very Remote Australia")
 
-d$region_aus_type <- forcats::factor(d$region_aus_type,
+d$region_aus_type <- sjlabelled::factor(d$region_aus_type,
                     levels = c("Major city",
                     "Inner regional",
                     "Outer regional",
