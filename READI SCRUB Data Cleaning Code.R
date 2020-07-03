@@ -1293,10 +1293,10 @@ library(readxl)
 regions <- read_xls("CG_POSTCODE_2017_RA_2016.xls", 4, skip = 5)
 regions <- regions[!is.na(regions$POSTCODE_2017...1),]
 d$region_aus <- as_numeric(NA)
-d$region_aus_type <- as_character(NA)
 d$region_aus[which_aus] <- regions$RA_CODE_2016[match(d[which_aus,names(d)=="area_code"],
                                                       regions$POSTCODE_2017...1)]
 d$region_aus <- as_numeric(d$region_aus)
+d$region_aus_type <- as.character(NA)
 d$region_aus_type[which_aus] <- regions$RA_NAME_2016[match(d[which_aus,names(d)=="area_code"],
                                                 regions$POSTCODE_2017...1)]
 d$region_aus_type <- as_factor(d$region_aus_type)
@@ -1309,7 +1309,7 @@ d$region_aus_type <- forcats::fct_recode(d$region_aus_type,
                   "Remote" = "Remote Australia",
                   "Very Remote" = "Very Remote Australia")
 
-d$region_aus_type <- sjlabelled::factor(d$region_aus_type,
+d$region_aus_type <- sjlabelled::as_factor(d$region_aus_type,
                     levels = c("Major city",
                     "Inner regional",
                     "Outer regional",
