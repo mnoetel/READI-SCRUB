@@ -218,12 +218,10 @@ d6$w4_rules_knowledge_gatherpublic[!is.na(d6$w4_rules_kowledge_gatherpublic)] <-
 #fix alcohol typo (if not already)
 # names(d3)[names(d3)=="othb_alocohol"] <- "othb_alcohol" # Fixed @@AS 2020-06-21
 # names(d4)[names(d4)=="othb_alocohol"] <- "othb_alcohol"
-<<<<<<< HEAD
-=======
 # d2 <- dplyr::rename(d2, conf_natleaders = conf_leaders,
 #                     conf_stateleaders = conf_7)
 
->>>>>>> ccbead7770af8e6f2a7924b922f135cb3968f1b7
+
 
 # * Join waves ------------------------------------------------------------
 
@@ -365,11 +363,8 @@ d <- d %>% filter(responseid != "R_b96aPTGwlYJg2hX", # Luca
 d <- arrange(d, desc(startdate))
 
 # remove unnecessary meta-data
-<<<<<<< HEAD
-#head(d)
-=======
+
 # head(d)
->>>>>>> ccbead7770af8e6f2a7924b922f135cb3968f1b7
 
 d <- dplyr::select(d, -enddate:-userlanguage)
 d <- dplyr::select(d, -contains("email")) 
