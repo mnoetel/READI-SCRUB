@@ -37,3 +37,19 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+.Rproj.user
+
+#data files
+*.dta
+*.RDS
+
+# Mac cache files
+*.DS_Store
+.DS_Store
+
+#auto-generated folder that saves upload information for RShiny
+*/rsconnect/
+*/rsconnect/*
+
+
+google-analytics.html
