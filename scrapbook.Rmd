@@ -58,6 +58,7 @@ names(dat)[-1:-5]
 
 
 ```{r}
+#filter_stem="swb"
 filter_stem="beh_"
 plot_data <- dplyr::select(dat, wave, agegroup, gender, state_aus, country,
                                     starts_with(filter_stem), -contains("other"),
@@ -124,9 +125,35 @@ m_subset$group<-as.numeric(m_subset$group)
 ```
 
 ```{r}
-m <- m %>% arrange(value)
+m <- m %>% arrange(desc(value))
 ```
 
+
+```{r}
+m %>%
+      ggplot( aes(x=group, y=percentage,fill=value,label=scales::percent(percentage,accuracy = 1))) +
+      geom_bar(size=1,alpha=0.5,stat="identity",position="stack")+
+      geom_text(size = 3, fontface="bold",position = position_stack(vjust = 0.5))+
+      # geom_line( data=m %>% dplyr::select(-Question), aes(group=q2), color="grey", size=0.5, alpha=0.5) +
+      # geom_line( aes(group=Question), color="#69b3a2", size=1.2 )+
+      # geom_ribbon(aes(group=Question), color=NA, fill="#69b3a2", alpha=0.1)+
+      #scale_color_viridis(discrete = TRUE) +
+      scale_y_continuous(labels=scales::percent_format())+
+      ggthemes::theme_fivethirtyeight() +
+      scale_fill_brewer(name="Answer", palette="RdYlBu",direction=-1)+
+      theme(
+        legend.position="top",
+        panel.grid = element_blank(),
+        plot.title = element_text(size = 20, face = "bold", hjust = 1),
+        plot.margin = margin(t = 10, r = 10, b = 5, l = 10, unit = "pt"),
+        axis.text.y = element_text(size=14),
+        axis.text.x = element_text(size=14, angle = 45, hjust = 1),
+        strip.text.x = element_text(size=14)
+      ) +
+      facet_wrap(~Question, dir = "v",
+                 ncol = 3,
+                 labeller = labeller(Question = label_wrap_gen(30)))
+```
 
 ```{r}
 library(plotly)

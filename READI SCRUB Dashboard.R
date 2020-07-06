@@ -22,7 +22,6 @@ library(sjPlot)
 library(RColorBrewer)
 library(readr)
 library(reshape2)
-library(plotly)
 
 data_file <- "latest_open_science_data.RDS"
 if(!file.exists(data_file)){
@@ -177,14 +176,8 @@ ui <- fluidPage(
     mainPanel(
       conditionalPanel(condition = "input.variable == 'Choose variable' & input.cross_or_long == 'Snapshot'",
                        HTML('<iframe width="560" height="315" src="https://www.youtube.com/embed/FtVYsD3SMpA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')),
-      # conditionalPanel(condition = "input.variable != 'Choose variable' | input.cross_or_long == 'Trends'",
-      #                  plotlyOutput("distPlot"), width = 9),
-      
-      conditionalPanel(condition = "input.variable != 'Choose variable' & input.cross_or_long != 'Trends'",
+      conditionalPanel(condition = "input.variable != 'Choose variable' | input.cross_or_long == 'Trends'",
                        plotOutput("distPlot"), width = 9),
-
-      conditionalPanel(condition = "input.cross_or_long == 'Trends'",
-                       plotlyOutput("distPlotly",height="800px"), width = 9),
     )
   )
 )
@@ -320,7 +313,8 @@ server <- function(input, output, session) {
     filter_me
   }
   
-  plot_change <- function(plot_data, plot_title, by = "wave"){
+  plot_change <- function(plot_data, plot_title, by = "wave",filter_stem){
+    stacked_bar_filters = c("beh_","othb_")
     #plot_data <- plot_dat
     #plot_title <- "title"
     plot_data$wave <- dplyr::recode(factor(plot_data$wave),
@@ -384,48 +378,82 @@ server <- function(input, output, session) {
     # by <- "agegroup"
     # by <- "state_aus"
     # by <- "country"
-    m <- groupByStackedBar(plot_data, by)
+    if(filter_stem %in% stacked_bar_filters){
+      m <- groupByStackedBar(plot_data, by)
+      only_one_wave <- table(m$Question)==1*length(unique(m$value))
+    }else{
+      m <- groupBy(plot_data, by)
+      m <- cbind(m, groupSDs(plot_data, by)$value)
+      only_one_wave <- table(m$Question)==1
+    }
+    
     m <- mutate(m, q2=Question)
-    only_one_wave <- table(m$Question)==1*length(unique(m$value))
     multiple_waves <- names(only_one_wave)[!only_one_wave]
     m <- filter(m, Question %in% multiple_waves)
     names(m)[1] <- "group"
+    if((filter_stem %in% stacked_bar_filters)==FALSE){
+      names(m)[4] <- "sd"
+    }
     m <- dplyr::filter(m, !is.na(group))
     m$group <- dplyr::recode(m$group,
                              'Australian Capital Territory' = "ACT",
                              'United Kingdom of Great Britain and Northern Ireland' = "UK",
                              'United States of America' = "USA")
-    
-    m$value<-factor(m$value,levels = y_values,labels=y_labels)
-    
-
-    m_plot<-
+    if(filter_stem %in% stacked_bar_filters){
+      #m$value<-factor(m$value,levels = y_values,labels=y_labels)
+      m$value<-factor(m$value,levels = rev(y_values),labels=rev(y_labels))
+      m$group<-factor(m$group,ordered=TRUE)
       m %>%
-      ggplot( aes(x=group, y=percentage,fill=value)) +
-      geom_bar(size=1,alpha=0.8,stat="identity",position="stack")+
-      # geom_line( data=m %>% dplyr::select(-Question), aes(group=q2), color="grey", size=0.5, alpha=0.5) +
-      # geom_line( aes(group=Question), color="#69b3a2", size=1.2 )+
-      # geom_ribbon(aes(group=Question), color=NA, fill="#69b3a2", alpha=0.1)+
-      #scale_color_viridis(discrete = TRUE) +
-      scale_y_continuous(labels=scales::percent_format())+
-      #scale_fill_manual(values=wes_palette(n=5, name="IsleofDogs2"))+
-      scale_fill_brewer(palette="RdYlBu",direction=-1)+
-      #ggthemes::theme_fivethirtyeight() +
-      theme(
-        legend.position="bottom",
-        panel.grid = element_blank(),
-        plot.title = element_text(size = 20, face = "bold", hjust = 1),
-        plot.margin = margin(t = 10, r = 10, b = 5, l = 10, unit = "pt"),
-        axis.text.y = element_text(size=10,face="bold"),
-        axis.text.x = element_text(size=10,face="bold", angle = 45, hjust = 1),
-        strip.text.x = element_text(size=10,face="bold")
-      ) +
-      facet_wrap(~Question, dir = "v",
-                 ncol = 3,
-                 labeller = labeller(Question = label_wrap_gen(30))) +
-      ggtitle(paste(c("Percent of ",plot_title," Answers Across ", str_to_title(by)), collapse = "")) #plot_title <- "testing"
-    #m_plot
-    ggplotly(m_plot)
+        ggplot( aes(x=group, y=percentage,fill=factor(value),label=scales::percent(percentage,accuracy = 1))) +
+        geom_bar(size=1,alpha=0.5,stat="identity",position="stack")+
+        geom_text(size = 3, fontface="bold",position = position_stack(vjust = 0.5))+
+        # geom_line( data=m %>% dplyr::select(-Question), aes(group=q2), color="grey", size=0.5, alpha=0.5) +
+        # geom_line( aes(group=Question), color="#69b3a2", size=1.2 )+
+        # geom_ribbon(aes(group=Question), color=NA, fill="#69b3a2", alpha=0.1)+
+        #scale_color_viridis(discrete = TRUE) +
+        scale_y_continuous(labels=scales::percent_format())+
+        ggthemes::theme_fivethirtyeight() +
+        scale_fill_brewer(name="Answer", palette="RdYlBu",direction=-1)+
+        theme(
+          legend.position="top",
+          panel.grid = element_blank(),
+          plot.title = element_text(size = 20, face = "bold", hjust = 1),
+          plot.margin = margin(t = 10, r = 10, b = 5, l = 10, unit = "pt"),
+          axis.text.y = element_text(size=14),
+          axis.text.x = element_text(size=14, angle = 45, hjust = 1),
+          strip.text.x = element_text(size=14)
+        ) +
+        facet_wrap(~Question, dir = "v",
+                   ncol = 3,
+                   labeller = labeller(Question = label_wrap_gen(30))) +
+        ggtitle(paste(c("Percent of ",plot_title," Answers Across ", str_to_title(by)), collapse = ""))
+      
+    }else{
+      m$ymin <- m$value-m$sd
+      m$ymax <- m$value+m$sd
+      
+      m %>%
+        ggplot( aes(x=group, y=value, ymin = ymin, ymax = ymax)) +
+        geom_line( data=m %>% dplyr::select(-Question), aes(group=q2), color="grey", size=0.5, alpha=0.5) +
+        geom_line( aes(group=Question), color="#69b3a2", size=1.2 )+
+        geom_ribbon(aes(group=Question), color=NA, fill="#69b3a2", alpha=0.1)+
+        #scale_color_viridis(discrete = TRUE) +
+        ggthemes::theme_fivethirtyeight() +
+        theme(
+          legend.position="none",
+          panel.grid = element_blank(),
+          plot.title = element_text(size = 20, face = "bold", hjust = 1),
+          plot.margin = margin(t = 10, r = 10, b = 5, l = 10, unit = "pt"),
+          axis.text.y = element_text(size=14),
+          axis.text.x = element_text(size=14, angle = 45, hjust = 1),
+          strip.text.x = element_text(size=14)
+        ) +
+        facet_wrap(~Question, dir = "v",
+                   ncol = 3,
+                   labeller = labeller(Question = label_wrap_gen(30))) +
+        ggtitle(paste(c("Mean Comparisons of ",plot_title," Across ", str_to_title(by)), collapse = "")) #plot_title <- "testing"
+    }
+    
   }
   
   pick_fogg <- function(df){
@@ -449,8 +477,7 @@ server <- function(input, output, session) {
     df
   }
   
-  
-  make_plot_dat <- function(input){
+  output$distPlot <- renderPlot({
     if(input$sh_country == "Worldwide"){
       plot_dat <- dat
       #input <- as.data.frame(NA)
@@ -487,51 +514,10 @@ server <- function(input, output, session) {
     #plot_dat <- oth
     plot_dat <- dplyr::filter(plot_dat, as.character(plot_dat$gender) %in% as.character(input$gender))
     plot_dat <- dplyr::filter(plot_dat, as.character(plot_dat$agegroup) %in% as.character(input$agegroup))
-    return(plot_dat)
     
-  }
-
-  output$distPlotly <- renderPlotly({
-    if (input$cross_or_long != 'Trends'){
-      return(NULL)
-    }
     
-    plot_dat <- make_plot_dat(input)
     
-    if(input$cross_or_long == 'Trends'){
-      filter_stem <- "beh_"
-      if(input$var2=="Worries"){
-        filter_stem <- "worry_"
-      } else if(input$var2=="Confidence"){
-        filter_stem <- "conf_"
-      } else if(input$var2=="Wellbeing"){
-        filter_stem <- "swb"
-      } else if(input$var2=="Other Preventative Behaviours"){
-        filter_stem <- "othb_"
-      } else if (input$var2=="Predicted Probabilities"){
-        filter_stem <- "prob_"
-      }
-    }
     
-    #plot_dat <- dat
-    #filter_stem <- "beh_"
-    plot_dat <- dplyr::select(plot_dat, wave, agegroup, gender, state_aus, country,
-                              starts_with(filter_stem), -contains("other"),
-                              -contains("_pa_"), -contains("alcohol"), -contains("w3"))
-    oth_plot <- plot_change(plot_dat, input$var2, tolower(input$compare))
-    
-    oth_plot
-    
-  })#, height = 800)
-  
-  output$distPlot <- renderPlot({
-    
-    if (input$cross_or_long == 'Trends'){
-      return(NULL)
-    }
-    
-
-    plot_dat <- make_plot_dat(input)
     
     #title of graph
     if(input$variable == "Behaviours"){
@@ -599,7 +585,20 @@ server <- function(input, output, session) {
       oth <- dplyr::select(plot_dat, startdate, contains("swb"))
       attr(oth[,5],"label") <- " Overall, how anxious did you feel yesterday?"
     }
-
+    if(input$cross_or_long == 'Trends'){
+      filter_stem <- "beh_"
+      if(input$var2=="Worries"){
+        filter_stem <- "worry_"
+      } else if(input$var2=="Confidence"){
+        filter_stem <- "conf_"
+      } else if(input$var2=="Wellbeing"){
+        filter_stem <- "swb"
+      } else if(input$var2=="Other Preventative Behaviours"){
+        filter_stem <- "othb_"
+      } else if (input$var2=="Predicted Probabilities"){
+        filter_stem <- "prob_"
+      }
+    }
     
     
     # else if(input$variable=="What do people think are symptoms?"){
@@ -618,7 +617,7 @@ server <- function(input, output, session) {
       if(dim(oth)[2]<1|dim(plot_dat)[1]<30){
         oth_plot <- ggplot(data.frame()) + geom_density() + xlim(0, 1) + ylim(0, 1) +
           scale_x_discrete(breaks = NULL)+scale_y_discrete(breaks = NULL)+
-          #ggthemes::theme_fivethirtyeight() +
+          ggthemes::theme_fivethirtyeight() +
           ggtitle("The filters you selected are too restrictive") +
           #scale_y_continuous(breaks = seq(from  = -100, to = 100,by = 20)) +
           theme(
@@ -630,7 +629,12 @@ server <- function(input, output, session) {
           )
       } else {
         if(input$cross_or_long == 'Trends'){
-          stop("no longer processing trends in this function.")
+          #plot_dat <- dat
+          #filter_stem <- "beh_"
+          plot_dat <- dplyr::select(plot_dat, wave, agegroup, gender, state_aus, country,
+                                    starts_with(filter_stem), -contains("other"),
+                                    -contains("_pa_"), -contains("alcohol"), -contains("w3"))
+          oth_plot <- plot_change(plot_dat, input$var2, tolower(input$compare),filter_stem)
         }else{
           if(cats > 0){
             oth_plot <-   gen_plot_with(oth, mytitle, cats, input$show_n, input$show_all)#T,T)#
