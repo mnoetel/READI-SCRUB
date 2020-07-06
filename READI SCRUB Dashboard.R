@@ -37,6 +37,11 @@ if(!file.exists(data_file)){
 }
 
 dat$gender <- sjlabelled::replace_labels(dat$gender, labels = c("Male" = 1, "Female" = 2, "Other" = 3))
+
+# col_values <- get_values(dat$beh_handwash)
+# col_labels <- get_labels(dat$beh_handwash)
+# dat$beh_handwash <- factor(dat$beh_handwash,levels=col_values,labels=col_labels,ordered = TRUE)
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   tags$head(includeHTML(("google-analytics.html"))),
@@ -182,7 +187,6 @@ ui <- fluidPage(
   )
 )
 
-
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
@@ -321,7 +325,21 @@ server <- function(input, output, session) {
                                     '2' = "April",
                                     '3' = "May",
                                     '4' = "June")
+    
+    
+    #extract names for the LAST column
+    #and we will assume they apply for all of them
+    #print(names(plot_data)[length(plot_data)])
+    y_values <- attr(plot_data[,names(plot_data)[length(plot_data)]],"labels")
+    y_labels <- names(y_values)
+    # print(y_labels)
+    # print(y_values)
+    
+    
+    
+    #iterate through all except the first 5 columns and replace their name with their label
     for(var in colnames(plot_data)[-1:-5]) {
+      
       names(plot_data)[which(var==colnames(plot_data))] <- attr(plot_data[,deparse(as.name(var))], "label")
     }
     if(by == "australian state"){
@@ -365,6 +383,8 @@ server <- function(input, output, session) {
     m <- filter(m, m$Question %in% multiple_waves)
     names(m)[1] <- "group"
     names(m)[4] <- "sd"
+    
+
     m$sd <- m$sd/sqrt(length(m$sd)) #conver to standard errors of the mean
     m <- dplyr::filter(m, !is.na(group))
     m$group <- dplyr::recode(m$group,
@@ -378,6 +398,8 @@ server <- function(input, output, session) {
       geom_line( data=m %>% dplyr::select(-Question), aes(group=q2), color="grey", size=0.5, alpha=0.5) +
       geom_line( aes(group=Question), color="#69b3a2", size=1.2 )+
       geom_ribbon(aes(group=Question), color=NA, fill="#69b3a2", alpha=0.1)+
+      #this is one way of labelling the y-axis. The other would be to recode the columns as factors, but that breask the code so I'll leave it for now
+      scale_y_continuous(breaks= y_values,labels = y_labels,limits = c(min(y_values),max(y_values)))+
       #scale_color_viridis(discrete = TRUE) +
       ggthemes::theme_fivethirtyeight() +
       theme(

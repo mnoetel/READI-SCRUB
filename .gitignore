@@ -50,6 +50,3 @@ vignettes/*.pdf
 #auto-generated folder that saves upload information for RShiny
 */rsconnect/
 */rsconnect/*
-
-
-google-analytics.html
