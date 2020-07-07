@@ -1318,11 +1318,11 @@ d$region_aus_type <- sjlabelled::as_factor(d$region_aus_type,
 
 # @@AS I somehow broke this inhab_labels, possibly due to an PC/MAC encoding issue for "less
 # than or equal to" (it shows as garbled characters on my screen)
-inhab_labels <- "≤ 5,000 people  (1) 
+inhab_labels <- "5,000 people or less  (1) 
 o	5,001 - 20,000  (2) 
 o	20,001 - 100,000  (3) 
 o	100,001 - 500,000  (4) 
-o	> 500,000 people  (5)"
+o	500,000 people or more  (5)"
 
 d$inhabitants <- factor(d$inhabitants, ordered = T,
                            levels = convert_radio_to_labs(inhab_labels))
