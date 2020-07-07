@@ -1,5 +1,12 @@
 # READI SCRUB Project
  For SCRUB cleaning code and dashboard
+ 
+ 
+## Branch information
+
+This branch, `bensmith_y_axis_percentages_with_plotly`, is work in progress to implementing plotly in the percentages graphs, which would allow interactive exploration.
+
+The implementation is quite buggy and the work is not high priority, so this will remain an unfinished branch unless it becomes a higher priority.
 
 ## SCRUB Cleaning Code
 This file downloads the data from qualtrics, matches it across waves, and cleans the data into labelled numeric data to be exported to the open science framework. If you've noticed any errors in the data or want any changes, please make a pull request.
