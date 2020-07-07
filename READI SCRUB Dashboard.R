@@ -112,6 +112,12 @@ ui <- fluidPage(
                                 "Predicted Probabilities"),
                     multiple = FALSE,
                     selected = "Core Preventative Behaviours"),
+        conditionalPanel(
+          #condition = "(input.var2 == 'Core Preventative Behaviours') || (input.var2 == 'Other Preventative Behaviours')",
+          condition = "['Core Preventative Behaviours', 'Other Preventative Behaviours','Confidence'].includes(input.var2)",
+          radioButtons("behaviourView", label="displayed as...",
+                       choices = list("Response Means" = "ResponseMeans",
+                                      "Response Percentages" = "ResponsePercentages"),selected = "ResponseMeans")),
         selectInput("compare",
                     label = "Compared across ...",
                     choices = c("Wave",
@@ -165,7 +171,9 @@ ui <- fluidPage(
                  href = "https://github.com/mnoetel/READI-SCRUB/issues", target ="_blank"),br(),
                "Dashboard with help from",br(),
                a("James Conigrave",
-                 href = "https://twitter.com/jamesconigrave", target="_blank"),
+                 href = "https://twitter.com/jamesconigrave", target="_blank"),br(),
+               a("Ben Smith",
+                 href = "https://bjsmith.github.io", target="_blank"),
       ),
       width = 3
     )
@@ -314,7 +322,16 @@ server <- function(input, output, session) {
   }
   
   plot_change <- function(plot_data, plot_title, by = "wave",filter_stem){
-    stacked_bar_filters = c("beh_","othb_")
+    stacked_bar_filters = c("beh_","othb_","conf_")
+    
+    #determine the type of plot to show
+    plotType="ResponseMeans"
+    if(filter_stem %in% stacked_bar_filters){
+      if(input$behaviourView=="ResponsePercentages"){
+        plotType=input$behaviourView
+      }
+    }
+    
     #plot_data <- plot_dat
     #plot_title <- "title"
     plot_data$wave <- dplyr::recode(factor(plot_data$wave),
@@ -378,7 +395,7 @@ server <- function(input, output, session) {
     # by <- "agegroup"
     # by <- "state_aus"
     # by <- "country"
-    if(filter_stem %in% stacked_bar_filters){
+    if(plotType=="ResponsePercentages"){
       m <- groupByStackedBar(plot_data, by)
       only_one_wave <- table(m$Question)==1*length(unique(m$value))
     }else{
@@ -391,7 +408,7 @@ server <- function(input, output, session) {
     multiple_waves <- names(only_one_wave)[!only_one_wave]
     m <- filter(m, Question %in% multiple_waves)
     names(m)[1] <- "group"
-    if((filter_stem %in% stacked_bar_filters)==FALSE){
+    if(plotType=="ResponseMeans"){
       names(m)[4] <- "sd"
     }
     m <- dplyr::filter(m, !is.na(group))
@@ -399,7 +416,7 @@ server <- function(input, output, session) {
                              'Australian Capital Territory' = "ACT",
                              'United Kingdom of Great Britain and Northern Ireland' = "UK",
                              'United States of America' = "USA")
-    if(filter_stem %in% stacked_bar_filters){
+    if(plotType=="ResponsePercentages"){
       #m$value<-factor(m$value,levels = y_values,labels=y_labels)
       m$value<-factor(m$value,levels = rev(y_values),labels=rev(y_labels))
       m$group<-factor(m$group,ordered=TRUE)
