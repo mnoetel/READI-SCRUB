@@ -44,6 +44,7 @@ Their choices are marked
 
 ```{r}
 library(data.table)
+library(sjlabelled)
 data_file <- "latest_open_science_data.RDS"
 dat <- readr::read_rds(data_file)
   
