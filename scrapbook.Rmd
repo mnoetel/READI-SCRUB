@@ -56,3 +56,132 @@ names(dat)[-1:-5]
 
 ```
 
+
+```{r}
+#filter_stem="swb"
+filter_stem="beh_"
+plot_data <- dplyr::select(dat, wave, agegroup, gender, state_aus, country,
+                                    starts_with(filter_stem), -contains("other"),
+                                    -contains("_pa_"), -contains("alcohol"), -contains("w3"))
+
+plot_data$wave <- dplyr::recode(factor(plot_data$wave),
+                                '1' = "March",
+                                '2' = "April",
+                                '3' = "May",
+                                '4' = "June")
+for(var in colnames(plot_data)[-1:-5]) {
+  names(plot_data)[which(var==colnames(plot_data))] <- attr(plot_data[,deparse(as.name(var))], "label")
+}
+
+
+groupByStackedBar <- function(df, field) {
+  #we will need to summarise the percentages separately for each group, I think.
+  #or we just reshape, right
+  #start something like this:
+  df %>% 
+    group_by_(field) %>% filter(n() >= 20) %>% ungroup() %>% 
+    #then gather the question data all into one column
+    tidyr::gather(key="Question",value="value",6:ncol(.)) %>%
+    filter(!is.na(value)) %>%
+    #group it by both question and the field
+    group_by_(field,"Question") %>% 
+    #tally
+    count(value) %>%
+    mutate(percentage=n/sum(n))
+}
+by <- "agegroup"
+
+m <- groupByStackedBar(plot_data, by)
+
+
+    m <- groupByStackedBar(plot_data, by)
+    m <- mutate(m, q2=Question)
+    only_one_wave <- table(m$Question)==1*length(unique(m$value))
+    multiple_waves <- names(only_one_wave)[!only_one_wave]
+    m <- filter(m, Question %in% multiple_waves)
+    names(m)[1] <- "group"
+    m <- dplyr::filter(m, !is.na(group))
+    m$group <- dplyr::recode(m$group,
+                             'Australian Capital Territory' = "ACT",
+                             'United Kingdom of Great Britain and Northern Ireland' = "UK",
+                             'United States of America' = "USA")
+    
+
+```
+
+```{r}
+#print(names(plot_data)[length(plot_data)])
+y_values <- attr(plot_data[,names(plot_data)[length(plot_data)]],"labels")
+y_labels <- names(y_values)
+    
+    m$value<-factor(m$value,levels = rev(y_values),labels=rev(y_labels))
+    m$group<-factor(m$group,ordered=TRUE)
+```
+
+
+```{r}
+m_subset<-m %>% filter(Question==m$Question[[1]])
+m_subset$group<-as.numeric(m_subset$group)
+```
+
+```{r}
+m <- m %>% arrange(desc(value))
+```
+
+
+```{r}
+m %>%
+      ggplot( aes(x=group, y=percentage,fill=value,label=scales::percent(percentage,accuracy = 1))) +
+      geom_bar(size=1,alpha=0.5,stat="identity",position="stack")+
+      geom_text(size = 3, fontface="bold",position = position_stack(vjust = 0.5))+
+      # geom_line( data=m %>% dplyr::select(-Question), aes(group=q2), color="grey", size=0.5, alpha=0.5) +
+      # geom_line( aes(group=Question), color="#69b3a2", size=1.2 )+
+      # geom_ribbon(aes(group=Question), color=NA, fill="#69b3a2", alpha=0.1)+
+      #scale_color_viridis(discrete = TRUE) +
+      scale_y_continuous(labels=scales::percent_format())+
+      ggthemes::theme_fivethirtyeight() +
+      scale_fill_brewer(name="Answer", palette="RdYlBu",direction=-1)+
+      theme(
+        legend.position="top",
+        panel.grid = element_blank(),
+        plot.title = element_text(size = 20, face = "bold", hjust = 1),
+        plot.margin = margin(t = 10, r = 10, b = 5, l = 10, unit = "pt"),
+        axis.text.y = element_text(size=14),
+        axis.text.x = element_text(size=14, angle = 45, hjust = 1),
+        strip.text.x = element_text(size=14)
+      ) +
+      facet_wrap(~Question, dir = "v",
+                 ncol = 3,
+                 labeller = labeller(Question = label_wrap_gen(30)))
+```
+
+```{r}
+library(plotly)
+m_plot<-
+    m %>%
+      ggplot( aes(x=group, y=percentage,fill=value)) +
+      geom_bar(size=1,alpha=0.8,stat="identity",position="stack")+
+      # geom_line( data=m %>% dplyr::select(-Question), aes(group=q2), color="grey", size=0.5, alpha=0.5) +
+      # geom_line( aes(group=Question), color="#69b3a2", size=1.2 )+
+      # geom_ribbon(aes(group=Question), color=NA, fill="#69b3a2", alpha=0.1)+
+      scale_y_continuous(labels=scales::percent_format())+
+      scale_fill_brewer(palette="RdYlBu",direction=-1)+
+      #ggthemes::theme_fivethirtyeight() +
+      theme(
+        legend.position="bottom",
+        panel.grid = element_blank(),
+        plot.title = element_text(size = 10, face = "bold", hjust = 1),
+        plot.margin = margin(t = 10, r = 10, b = 5, l = 10, unit = "pt"),
+        axis.text.y = element_text(size=10,face="bold"),
+        axis.text.x = element_text(size=10,face="bold", angle = 45, hjust = 1),
+        strip.text.x = element_text(size=10,face="bold"),
+        strip.background.x = element_rect(size=50,colour="black")
+      ) +
+      facet_wrap(~Question, dir = "v",
+                 ncol = 3,
+                 labeller = labeller(Question = label_wrap_gen(30))) 
+
+ggplotly(m_plot)
+```
+
+
