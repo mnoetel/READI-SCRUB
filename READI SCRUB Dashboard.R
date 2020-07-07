@@ -130,8 +130,8 @@ ui <- fluidPage(
       ),
       checkboxGroupInput("wave",
                          label = "Which wave of data do you want to see?",
-                         choices = c("1","2", "3", "4"),
-                         selected = c("1","2", "3", "4"),
+                         choices = c("1","2", "3", "4", "5"),
+                         selected = c("1","2", "3", "4", "5"),
                          inline = T, width = "100%"),
       selectInput("sh_country",
                   label = "Select a country",
@@ -338,7 +338,8 @@ server <- function(input, output, session) {
                                     '1' = "March",
                                     '2' = "April",
                                     '3' = "May",
-                                    '4' = "June")
+                                    '4' = "June",
+                                    '5' = "July")
     
     #get names for labels
     y_values <- attr(plot_data[,names(plot_data)[length(plot_data)]],"labels")
