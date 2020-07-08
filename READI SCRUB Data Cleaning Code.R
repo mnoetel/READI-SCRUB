@@ -1326,6 +1326,8 @@ o	> 500,000 people  (5)"
 
 d$inhabitants <- factor(d$inhabitants, ordered = T,
                            levels = convert_radio_to_labs(inhab_labels))
+library(forcats)
+d$inhabitants <- fct_recode(d$inhabitants, "5,000 people or less"="≤ 5,000 people")
 
 sac_cols <- grep("_sac$",names(d))
 
