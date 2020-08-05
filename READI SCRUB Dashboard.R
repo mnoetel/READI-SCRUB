@@ -30,7 +30,7 @@ if(!file.exists(data_file)){
   scrub <- osf_retrieve_node("zt3f7") #open science data
   #scrub <- osf_retrieve_node("q7gck") #sensitive data
   scrub_files <- osf_ls_files(scrub)
-  dat <- osf_download(scrub_files[3, ], conflicts = "overwrite")
+  dat <- osf_download(scrub_files[5, ], conflicts = "overwrite")
   dat <- readr::read_rds(dat$local_path)
 } else {
   dat <- readr::read_rds(data_file)
@@ -56,7 +56,7 @@ ui <- fluidPage(
                     choices = c("Choose variable",
                                 "Behaviours",
                                 "Worries",
-                                "Confidence in authorities",
+                                #"Confidence in authorities",
                                 "Information sources",
                                 "Trust in information",
                                 "Perceived knowledge",
@@ -106,7 +106,7 @@ ui <- fluidPage(
                     label = "I want to see ...",
                     choices = c("Core Preventative Behaviours",
                                 "Worries",
-                                "Confidence",
+                                #"Confidence",
                                 "Wellbeing",
                                 "Other Preventative Behaviours",
                                 "Predicted Probabilities"),

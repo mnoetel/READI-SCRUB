@@ -1318,7 +1318,7 @@ d$region_aus_type <- sjlabelled::as_factor(d$region_aus_type,
 
 # @@AS I somehow broke this inhab_labels, possibly due to an PC/MAC encoding issue for "less
 # than or equal to" (it shows as garbled characters on my screen)
-inhab_labels <- "5,000 people or less  (1) 
+inhab_labels <- "≤ 5,000 people  (1) 
 o	5,001 - 20,000  (2) 
 o	20,001 - 100,000  (3) 
 o	100,001 - 500,000  (4) 
@@ -1456,7 +1456,7 @@ writexl::write_xlsx(as.data.frame.matrix(country_completion), file_name_completi
 public_dat %>% osf_upload(file_name_completion, conflicts = "overwrite", verbose = T)
 
 #exporting data for various teams
-open_science <- d[, !sapply(d, is.character)] %>% dplyr::select(-area_code)
+open_science <- d[, !sapply(d, is.character)] %>% dplyr::select(-area_code, -ausonly_postcode, -quo_postcode_focus)
 #file_name <- paste(c(gsub("-","_",as.character(Sys.Date())),"_open_science_data.csv"), collapse = "") #dynamic updating with date in filename
 file_name_open_csv <- "latest_open_science_data.csv"
 write.csv(open_science, file_name_open_csv)
