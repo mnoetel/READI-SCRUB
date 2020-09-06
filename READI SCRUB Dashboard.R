@@ -98,7 +98,18 @@ ui <- fluidPage(
                                    "Covering coughs",
                                    "Keeping 2m",
                                    "Avoiding their face"),
-                       multiple = TRUE)
+                       multiple = TRUE),
+        selectInput("compare_snapshot",
+                    label = "Compared across ...",
+                    choices = c(
+                      "(No group comparison)",
+                      "Wave",
+                      "Gender",
+                      "Age",
+                      "Country",
+                      "Australian State"),
+                    multiple = FALSE,
+                    selected = "(No group comparison)")
       ),
       conditionalPanel(
         condition = "input.cross_or_long == 'Trends'",
@@ -118,7 +129,7 @@ ui <- fluidPage(
           radioButtons("behaviourView", label="displayed as...",
                        choices = list("Response Means" = "ResponseMeans",
                                       "Response Percentages" = "ResponsePercentages"),selected = "ResponseMeans")),
-        selectInput("compare",
+        selectInput("compare_trends",
                     label = "Compared across ...",
                     choices = c("Wave",
                                 "Gender",
@@ -194,6 +205,9 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
+  #' plot likert distribution of responses
+  #' @example 
+  #' con_data_plot(data, title)
   gen_plot_with <- function(data, title, cats, show_n, show_all){
     date_range <- paste(format(range(as.Date.POSIXct(data$startdate)),
                                format = "%B %d"), collapse = " — ")
@@ -239,7 +253,12 @@ server <- function(input, output, session) {
     
     data_plot
   }
-  con_data_plot <- function(data, title){
+  
+  #' plot boxplot of responses
+  #' @example 
+  #' con_data_plot(data, title)
+  con_data_plot <- function(data, title,compare_by_var){
+    
     data <- dplyr::select(data, -startdate)
     names(data) <- sapply(data, function(x){attr(x,"label")})
     for(i in 1:dim(data)[2]){
@@ -265,7 +284,8 @@ server <- function(input, output, session) {
         #legend.text = element_blank()#element_text(size=16)
         #panel.grid.minor.y = element_line(colour = 'grey', linetype = 2),
       )+
-      ggtitle(title)
+      ggtitle(title)#+
+      #labs(caption="con_data_plot")
     p
   }
   instructions_plot <- function(){
@@ -652,7 +672,7 @@ server <- function(input, output, session) {
           plot_dat <- dplyr::select(plot_dat, wave, agegroup, gender, state_aus, country,
                                     starts_with(filter_stem), -contains("other"),
                                     -contains("_pa_"), -contains("alcohol"), -contains("w3"))
-          oth_plot <- plot_change(plot_dat, input$var2, tolower(input$compare),filter_stem)
+          oth_plot <- plot_change(plot_dat, input$var2, tolower(input$compare_trends),filter_stem)
         }else{
           if(cats > 0){
             oth_plot <-   gen_plot_with(oth, mytitle, cats, input$show_n, input$show_all)#T,T)#
