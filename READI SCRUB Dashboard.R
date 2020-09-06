@@ -23,6 +23,7 @@ library(RColorBrewer)
 library(readr)
 library(reshape2)
 
+
 data_file <- "latest_open_science_data.RDS"
 if(!file.exists(data_file)){
   library(osfr)
@@ -35,6 +36,10 @@ if(!file.exists(data_file)){
 } else {
   dat <- readr::read_rds(data_file)
 }
+
+#let's automatically get the waves from our data file.
+waves_num<-sort(unique(dat$wave))
+waves_char <- as.character(waves_num)
 
 dat$gender <- sjlabelled::replace_labels(dat$gender, labels = c("Male" = 1, "Female" = 2, "Other" = 3))
 # Define UI for application that draws a histogram
@@ -130,8 +135,8 @@ ui <- fluidPage(
       ),
       checkboxGroupInput("wave",
                          label = "Which wave of data do you want to see?",
-                         choices = c("1","2", "3", "4", "5"),
-                         selected = c("1","2", "3", "4", "5"),
+                         choices = waves_char,
+                         selected = waves_char,
                          inline = T, width = "100%"),
       selectInput("sh_country",
                   label = "Select a country",
