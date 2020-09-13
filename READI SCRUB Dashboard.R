@@ -23,8 +23,11 @@ library(RColorBrewer)
 library(readr)
 library(reshape2)
 
+#fixes
+#state_aus required, but doens't exist
+#most headers are missing their labels for some reason
 
-data_file <- "latest_open_science_data.RDS"
+data_file <- "latest_open_science_data_sep_transform.RDS"
 if(!file.exists(data_file)){
   library(osfr)
   osf_auth()
